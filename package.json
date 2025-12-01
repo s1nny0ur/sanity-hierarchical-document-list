@@ -1,5 +1,5 @@
 {
-  "name": "@considered-vision/hierarchical-document-list",
+  "name": "@considered-vision/sanity-hierarchical-document-list",
   "version": "3.0.0",
   "description": "Fork of @sanity/hierarchical-document-list with maintained dependencies",
   "keywords": [
