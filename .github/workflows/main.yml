@@ -4,6 +4,8 @@ name: CI & Release
 on:
   push:
     branches: [main]
+    tags:
+      - 'v*' # Trigger on version tags like v3.0.0, v3.1.0, etc.
   pull_request:
   workflow_dispatch:
     inputs:
@@ -39,7 +41,8 @@ jobs:
       contents: write
       id-token: write
     needs: [build]
-    if: github.event.inputs.release == 'true'
+    # Run on tag push OR manual trigger with release checked
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.release == 'true'
     runs-on: ubuntu-latest
     name: Publish to npm
     steps:
