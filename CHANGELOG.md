@@ -5,6 +5,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## <small>3.0.1 (2025-12-01)</small>
+
+- fix: lint errors preventing build ([f98c258](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/f98c258))
+- fix: remove registry-url to let semantic-release handle npm auth ([2969bce](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/2969bce))
+- fix: smooth drag mechanics and versioning set up ([157923b](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/157923b))
+
 ## [3.0.0](https://github.com/s1nny0ur/sanity-hierarchical-document-list/releases/tag/v3.0.0) (2025-12-01)
 
 ### ⚠ BREAKING CHANGES
