@@ -10,8 +10,6 @@ Plugin for visually organizing documents as hierarchies in the [Sanity studio](h
 
 ![Screenshot of the plugin](/screenshot-1.jpg)
 
-⚠️ **Compatibility:** This plugin requires Sanity Studio [version 3.3.0](https://github.com/sanity-io/sanity/releases/tag/v3.3.0) or higher.
-
 If you're looking for a way to order documents on a flat list, refer to [@sanity/orderable-document-list](https://github.com/sanity-io/orderable-document-list).
 
 
