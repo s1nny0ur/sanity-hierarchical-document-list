@@ -12,6 +12,7 @@ import {LocalTreeItem, Optional, StoredTreeItem, TreeDeskStructureProps} from '.
 import getTreeHeight from '../utils/getTreeHeight'
 import {getUnaddedItems} from '../utils/treeData'
 import {HandleMovedNodeData} from '../utils/treePatches'
+import {isDescendant} from '../utils/treeUtils'
 import DocumentInNode from './DocumentInNode'
 import {SortableTree} from './SortableTree'
 import {TreeEditorErrorBoundary} from './TreeEditorErrorBoundary'
@@ -73,6 +74,10 @@ const TreeEditor: React.FC<{
     (data: {node: LocalTreeItem; nextParentNode?: LocalTreeItem | null; depth: number}) => {
       // Prevent dropping inside itself (circular nesting)
       if (data.nextParentNode && data.node._key === data.nextParentNode._key) {
+        return false
+      }
+      // Prevent dropping a parent into one of its descendants (would create circular reference)
+      if (data.nextParentNode && isDescendant(data.node, data.nextParentNode)) {
         return false
       }
       return true

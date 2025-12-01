@@ -89,8 +89,8 @@ export function getMovedNodePatch(data: HandleMovedNodeData): unknown[] {
       ? // After the sibling before it
         Patch.insert([normalizedNode], 'after', [{_key: leadingNode.node._key}])
       : // Or before the sibling right after it, in case there's no leading sibling node
-        // prettier-ignore
-        Patch.insert([normalizedNode], 'before', [followingNode?.node?._key ? {_key: followingNode.node._key} : data.nextTreeIndex]),
+        // If no following sibling exists, insert at index 0 (first position) for concurrent safety
+        Patch.insert([normalizedNode], 'before', [followingNode?.node?._key ? {_key: followingNode.node._key} : 0]),
 
     // 3. Patch the new node with its new `parent`
     nextParentNode
@@ -158,8 +158,9 @@ export function getMoveItemPatch({
       ? // After the sibling before it
         Patch.insert([normalizedNode], 'after', [{_key: leadingNode.node._key}])
       : // Or before the sibling right after it, in case there's no leading sibling node
+        // If no following sibling exists, insert at index 0 (first position) for concurrent safety
         Patch.insert([normalizedNode], 'before', [
-          followingNode?.node?._key ? {_key: followingNode.node._key} : nextTreeIndex
+          followingNode?.node?._key ? {_key: followingNode.node._key} : 0
         ]),
 
     // 3. Patch the new node with its new `parent`
