@@ -1,21 +1,21 @@
-import {
-  FlatDataItem,
-  FullTree,
-  getFlatDataFromTree,
-  NodeData,
-  TreeItem
-} from '@nosferatu500/react-sortable-tree'
 import {randomKey} from '@sanity/util/content'
 import * as Patch from 'sanity'
 import {LocalTreeItem, NodeProps} from '../types'
 import getAdjescentNodes from './getAdjescentNodes'
 import moveItemInArray from './moveItemInArray'
 import {normalizeNodeForStorage} from './treeData'
+import {FlatDataItem, getFlatDataFromTree} from './treeUtils'
 
-export type HandleMovedNodeData = Omit<
-  NodeData & FullTree & any,
-  'prevPath' | 'prevTreeIndex' | 'path' | 'treeIndex' | 'node'
-> & {node: LocalTreeItem}
+/**
+ * Data passed to handleMovedNode when a node is moved via drag-and-drop
+ */
+export interface HandleMovedNodeData {
+  node: LocalTreeItem
+  treeData: LocalTreeItem[]
+  nextPath: string[] | null
+  nextTreeIndex: number
+  nextParentNode?: LocalTreeItem | null
+}
 
 export type HandleMovedNode = (moveData: HandleMovedNodeData) => void
 
@@ -100,7 +100,7 @@ export function getMovedNodePatch(data: HandleMovedNodeData): unknown[] {
   ]
 }
 
-function getChildrenPaths(node: TreeItem): string[] {
+function getChildrenPaths(node: LocalTreeItem): string[] {
   if (!Array.isArray(node.children)) {
     return []
   }
@@ -119,7 +119,7 @@ export function getMoveItemPatch({
   direction = 'up'
 }: {
   nodeProps: any
-  localTree: TreeItem[]
+  localTree: LocalTreeItem[]
   direction: 'up' | 'down'
 }): unknown[] {
   const keyPath = {_key: node._key}
@@ -130,7 +130,7 @@ export function getMoveItemPatch({
     treeData: localTree,
     getNodeKey: (t) => t.node._key
   })
-  const nextFlatTree = moveItemInArray<FlatDataItem>({
+  const nextFlatTree = moveItemInArray<FlatDataItem<LocalTreeItem>>({
     array: flatTree,
     fromIndex: treeIndex,
     toIndex: nextTreeIndex

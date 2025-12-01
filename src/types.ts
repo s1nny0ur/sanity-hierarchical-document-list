@@ -1,4 +1,4 @@
-import {TreeItem} from '@nosferatu500/react-sortable-tree'
+import * as React from 'react'
 import {ArraySchemaType, ObjectSchemaType, SanityDocument} from 'sanity'
 import {INTERNAL_NODE_TYPE, INTERNAL_NODE_VALUE_TYPE} from './utils/injectNodeTypeInPatches'
 
@@ -27,7 +27,7 @@ export interface StoredTreeItem {
 
 /**
  * Tree items enhanced locally in the client with info from `allItems` and `visibilityMap`.
- * `allItems` stop here and never become LocalTreeItems as they aren't added to react-sortable-tree.
+ * `allItems` stop here and never become LocalTreeItems as they aren't added to the tree view.
  *
  * See `useLocalTree.ts` and `dataToEditorTree()`.
  */
@@ -48,9 +48,18 @@ export interface EnhancedTreeItem extends StoredTreeItem {
 }
 
 /**
- * Tree items as found in the sortable tree itself.
+ * Tree items as found in the sortable tree view.
  */
-export type LocalTreeItem = EnhancedTreeItem & Pick<TreeItem, 'title' | 'children'>
+export interface LocalTreeItem extends EnhancedTreeItem {
+  /**
+   * Title can be a string or a render function for custom node content
+   */
+  title?: string | ((props: NodeProps) => React.ReactNode)
+  /**
+   * Children nodes in the tree hierarchy
+   */
+  children?: LocalTreeItem[]
+}
 
 export interface TreeInputOptions {
   /**

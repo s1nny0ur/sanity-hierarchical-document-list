@@ -1,6 +1,7 @@
-import {getVisibleNodeCount, TreeItem} from '@nosferatu500/react-sortable-tree'
+import {LocalTreeItem} from '../types'
+import {getVisibleNodeCount} from './treeUtils'
 
-export default function getTreeHeight(treeData: TreeItem[], rowHeight: number): string {
+export default function getTreeHeight(treeData: LocalTreeItem[], rowHeight: number): string {
   const visibleNodeCount = getVisibleNodeCount({treeData})
 
   // prettier-ignore

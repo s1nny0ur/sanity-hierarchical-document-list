@@ -1,4 +1,5 @@
-import {FlatDataItem, TreeItem} from '@nosferatu500/react-sortable-tree'
+import {LocalTreeItem} from '../types'
+import {FlatDataItem} from './treeUtils'
 
 /**
  * Gets adjescent non-children nodes of a given treeIndex.
@@ -8,12 +9,12 @@ export default function getAdjescentNodes({
   node,
   treeIndex,
 }: {
-  flatTree: FlatDataItem[]
-  node: TreeItem
+  flatTree: FlatDataItem<LocalTreeItem>[]
+  node: LocalTreeItem
   treeIndex: number
 }): {
-  leadingNode?: FlatDataItem
-  followingNode?: FlatDataItem
+  leadingNode?: FlatDataItem<LocalTreeItem>
+  followingNode?: FlatDataItem<LocalTreeItem>
 } {
   const leadingNode = flatTree
     .slice(0, treeIndex)

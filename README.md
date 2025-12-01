@@ -1,4 +1,6 @@
-# sanity-plugin-hierarchical-document-list
+# @our-scope/hierarchical-document-list
+
+> **Fork of [@sanity/hierarchical-document-list](https://github.com/sanity-io/hierarchical-document-list)** with maintained dependencies and dnd-kit-based tree view.
 
 Plugin for visually organizing documents as hierarchies in the [Sanity studio](https://www.sanity.io/docs/sanity-studio). Applications include:
 
@@ -18,7 +20,7 @@ If you're looking for a way to order documents on a flat list, refer to [@sanity
 
 ```bash
 # From the root of your sanity project
-npm i @sanity/hierarchical-document-list
+npm i @our-scope/hierarchical-document-list
 ```
 
 ## Usage
@@ -28,7 +30,7 @@ npm i @sanity/hierarchical-document-list
 ```js
 // sanity.config.js
 import {defineConfig} from 'sanity'
-import {hierarchicalDocumentList, hierarchyTree} from '@sanity/hierarchical-document-list'
+import {hierarchicalDocumentList, hierarchyTree} from '@our-scope/hierarchical-document-list'
  
 export default defineConfig({
    // ...
@@ -51,7 +53,7 @@ export default defineConfig({
 // sanity.config.ts
 import {defineConfig} from 'sanity'
 import {deskTool} from 'sanity/desk'
-import {createDeskHierarchy, hierarchicalDocumentList, hierarchyTree} from '@sanity/hierarchical-document-list'
+import {createDeskHierarchy, hierarchicalDocumentList, hierarchyTree} from '@our-scope/hierarchical-document-list'
 
 export default defineConfig({
   // ...
@@ -209,7 +211,7 @@ Find a given document in a hierarchy and get its parent - useful for rendering b
 From the flat data queried, you'll need to convert it to a nested tree with `flatDataToTree`:
 
 ```js
-import {flatDataToTree} from '@sanity/hierarchical-document-list'
+import {flatDataToTree} from '@our-scope/hierarchical-document-list'
 
 const hierarchyDocument = await client.fetch(`*[_id == "book-v3-review-a"][0]{
   tree[] {
@@ -269,7 +271,7 @@ To add this document type, create a set of schemas with the `createHierarchicalS
 
 ```js
 // hierarchicalSchemas.js
-import {createHierarchicalSchemas} from '@sanity/hierarchical-document-list'
+import {createHierarchicalSchemas} from '@our-scope/hierarchical-document-list'
 
 export const hierarchicalOptions = {
   // choose the document type name that suits you best

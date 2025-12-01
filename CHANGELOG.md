@@ -5,6 +5,28 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.0](https://github.com/s1nny0ur/sanity-hierarchical-document-list/releases/tag/v3.0.0) (2025-12-01)
+
+### ⚠ BREAKING CHANGES
+
+- Replaced `@nosferatu500/react-sortable-tree` with a custom dnd-kit-based tree view.
+- Removed `react-dnd` and `react-dnd-html5-backend` dependencies.
+
+### Features
+
+- **dnd-kit:** Implemented custom tree view using `@dnd-kit/core` and `@dnd-kit/sortable`.
+- **tree:** Added new `SortableTree` component with drag-and-drop reordering.
+- **tree:** Support for changing parent relationships (nesting) via drag-and-drop.
+- **tree:** Maintained expand/collapse behaviour.
+- **tree:** Created utility functions for tree operations (`flatDataToTree`, `getFlatDataFromTree`, `getVisibleNodeCount`, `isDescendant`).
+
+### Notes
+
+- No public API changes expected; behaviour should be equivalent or improved.
+- This is a fork of `@sanity/hierarchical-document-list` with maintained dependencies.
+
+---
+
 ## [2.1.2](https://github.com/sanity-io/hierarchical-document-list/compare/v2.1.1...v2.1.2) (2025-07-10)
 
 ### Bug Fixes

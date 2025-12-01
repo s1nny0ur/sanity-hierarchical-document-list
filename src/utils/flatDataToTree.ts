@@ -1,20 +1,13 @@
-import {getTreeFromFlatData} from '@nosferatu500/react-sortable-tree'
 import {StoredTreeItem} from '../types'
+import {flatDataToTree as flatDataToTreeUtil, TreeItemWithChildren} from './treeUtils'
 
-interface TreeItemWithChildren extends StoredTreeItem {
-  children?: TreeItemWithChildren[]
+export default function flatDataToTree<T extends StoredTreeItem>(data: T[]): TreeItemWithChildren<T>[] {
+  // Ensure parent is null instead of undefined for proper tree construction
+  const normalizedData = data.map((item) => ({
+    ...item,
+    parent: item.parent || null,
+  }))
+  return flatDataToTreeUtil(normalizedData)
 }
 
-export default function flatDataToTree(data: StoredTreeItem[]): TreeItemWithChildren[] {
-  return getTreeFromFlatData({
-    flatData: data.map((item) => ({
-      ...item,
-      // if parent: undefined, the tree won't be constructed
-      parent: item.parent || null,
-    })),
-    getKey: (item) => item._key,
-    getParentKey: (item) => item.parent,
-    // without rootKey, the tree won't be constructed
-    rootKey: null as any,
-  }) as TreeItemWithChildren[]
-}
+export type {TreeItemWithChildren}

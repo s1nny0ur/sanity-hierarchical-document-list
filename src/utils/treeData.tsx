@@ -1,4 +1,3 @@
-import {TreeItem} from '@nosferatu500/react-sortable-tree'
 import {randomKey} from '@sanity/util/content'
 import {SanityDocument} from 'sanity'
 import DocumentInNode from '../components/DocumentInNode'
@@ -76,11 +75,11 @@ const documentPairToNode = (doc?: DocumentPair): EnhancedTreeItem | undefined =>
   }
 }
 
-export const flatTree = (tree: TreeItem[]): TreeItem[] => {
+export const flatTree = (tree: LocalTreeItem[]): Omit<LocalTreeItem, 'children'>[] => {
   return tree.reduce((flattened, item) => {
     const {children, ...node} = item
     return [...flattened, node, ...(Array.isArray(children) ? flatTree(children) : [])]
-  }, [] as TreeItem[])
+  }, [] as Omit<LocalTreeItem, 'children'>[])
 }
 
 export interface FetchData {
