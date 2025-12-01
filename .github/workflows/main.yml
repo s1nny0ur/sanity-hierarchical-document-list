@@ -54,7 +54,6 @@ jobs:
         with:
           cache: npm
           node-version: lts/*
-          registry-url: 'https://registry.npmjs.org'
       - run: npm clean-install
       - run: npm run build
       - run: npx semantic-release
