@@ -15,6 +15,7 @@ const Root = styled.div`
   align-items: center;
   box-sizing: border-box;
   min-height: 51px;
+  transition: background-color 0.15s ease;
 
   &[data-landing='true'] > *,
   &[data-cancel='true'] > * {
@@ -44,15 +45,23 @@ const Root = styled.div`
     padding-left: 10px;
     padding-top: 5px;
     padding-bottom: 5px;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
   }
 
   &[data-ghost='true'] {
-    opacity: 0.5;
+    opacity: 0.4;
   }
 
   &[data-ghost='true'] > * {
     background-color: transparent;
     box-shadow: none;
+  }
+
+  &[data-over='true'] {
+    background-color: ${cyan[50].hex};
+    border-radius: 3px;
   }
 `
 
@@ -82,6 +91,7 @@ export function SortableTreeItem({
   indentationWidth,
   clone,
   isDragging,
+  isOver,
   canDrag = true,
   onToggle,
 }: SortableTreeItemProps): React.ReactElement {
@@ -194,6 +204,7 @@ export function SortableTreeItem({
       }}
       data-clone={clone}
       data-ghost={isDragging || isSortableDragging}
+      data-over={isOver}
       data-known-size="51"
       {...attributes}
     >

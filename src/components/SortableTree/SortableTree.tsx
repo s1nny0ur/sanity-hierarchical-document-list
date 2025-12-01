@@ -17,13 +17,17 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import * as React from 'react'
-import {useCallback, useMemo, useState} from 'react'
+import {useCallback, useMemo, useRef, useState} from 'react'
 
 import {LocalTreeItem} from '../../types'
+import {DropIndicator} from './DropIndicator'
 import {SortableTreeItem} from './SortableTreeItem'
 import {TreeItemPlaceholder} from './TreeItemPlaceholder'
 
 const INDENTATION_WIDTH = 44
+// Hysteresis: require more movement to CHANGE depth than to MAINTAIN it
+const DEPTH_CHANGE_THRESHOLD = 0.65 // 65% of indentation width to change depth
+const DEPTH_MAINTAIN_THRESHOLD = 0.35 // 35% to snap back
 
 export interface SortableTreeProps {
   treeData: LocalTreeItem[]
@@ -77,17 +81,20 @@ function getProjection(
   activeId: UniqueIdentifier,
   overId: UniqueIdentifier,
   dragOffset: number,
-  indentationWidth: number
+  indentationWidth: number,
+  currentProjectedDepth: number | null
 ): {
   depth: number
   parentId: string | null
   overId: UniqueIdentifier
+  insertPosition: 'before' | 'after'
+  insertIndex: number
 } {
   const overItemIndex = items.findIndex(({_key}) => _key === overId)
   const activeItemIndex = items.findIndex(({_key}) => _key === activeId)
 
   if (overItemIndex === -1 || activeItemIndex === -1) {
-    return {depth: 0, parentId: null, overId}
+    return {depth: 0, parentId: null, overId, insertPosition: 'before', insertIndex: 0}
   }
 
   const activeItem = items[activeItemIndex]
@@ -97,11 +104,37 @@ function getProjection(
 
   const previousItem = newItems[overItemIndex - 1]
 
-  // Calculate depth based on drag offset
-  const projectedDepth = activeItem.depth + Math.round(dragOffset / indentationWidth)
+  // Calculate depth with hysteresis for smoother feel
+  const rawDepthOffset = dragOffset / indentationWidth
+  let projectedDepth: number
+
+  if (currentProjectedDepth === null) {
+    // Initial projection - use standard rounding
+    projectedDepth = activeItem.depth + Math.round(rawDepthOffset)
+  } else {
+    // Apply hysteresis - require more movement to change depth
+    const currentOffset = currentProjectedDepth - activeItem.depth
+    const offsetDelta = rawDepthOffset - currentOffset
+
+    if (Math.abs(offsetDelta) > DEPTH_CHANGE_THRESHOLD) {
+      // Enough movement to change depth
+      projectedDepth = activeItem.depth + Math.round(rawDepthOffset)
+    } else if (Math.abs(offsetDelta) < DEPTH_MAINTAIN_THRESHOLD) {
+      // Within maintain zone - keep current depth
+      projectedDepth = currentProjectedDepth
+    } else {
+      // In the transition zone - keep current
+      projectedDepth = currentProjectedDepth
+    }
+  }
+
   const maxDepth = previousItem ? previousItem.depth + 1 : 0
   const minDepth = 0
   const depth = Math.min(Math.max(projectedDepth, minDepth), maxDepth)
+
+  // Determine insert position relative to over item
+  const insertPosition: 'before' | 'after' = activeItemIndex > overItemIndex ? 'before' : 'after'
+  const insertIndex = insertPosition === 'before' ? overItemIndex : overItemIndex + 1
 
   // Find parent based on depth
   let parentId: string | null = null
@@ -119,7 +152,7 @@ function getProjection(
     }
   }
 
-  return {depth, parentId, overId}
+  return {depth, parentId, overId, insertPosition, insertIndex}
 }
 
 export function SortableTree({
@@ -133,6 +166,8 @@ export function SortableTree({
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
   const [overId, setOverId] = useState<UniqueIdentifier | null>(null)
   const [offsetLeft, setOffsetLeft] = useState(0)
+  // Track projected depth for hysteresis
+  const projectedDepthRef = useRef<number | null>(null)
 
   const flattenedItems = useMemo(() => flattenWithDepth(treeData), [treeData])
   const sortedIds = useMemo(() => flattenedItems.map(({_key}) => _key), [flattenedItems])
@@ -149,13 +184,17 @@ export function SortableTree({
 
   const projected = useMemo(() => {
     if (activeId && overId) {
-      return getProjection(
+      const projection = getProjection(
         flattenedItems,
         activeId,
         overId,
         offsetLeft,
-        INDENTATION_WIDTH
+        INDENTATION_WIDTH,
+        projectedDepthRef.current
       )
+      // Update the ref for next calculation (hysteresis)
+      projectedDepthRef.current = projection.depth
+      return projection
     }
     return null
   }, [activeId, overId, flattenedItems, offsetLeft])
@@ -163,6 +202,7 @@ export function SortableTree({
   const handleDragStart = useCallback(({active}: DragStartEvent) => {
     setActiveId(active.id)
     setOverId(active.id)
+    projectedDepthRef.current = null // Reset hysteresis on new drag
   }, [])
 
   const handleDragMove = useCallback(({delta}: DragMoveEvent) => {
@@ -243,6 +283,7 @@ export function SortableTree({
     setActiveId(null)
     setOverId(null)
     setOffsetLeft(0)
+    projectedDepthRef.current = null
   }
 
   const handleToggle = useCallback(
@@ -259,6 +300,10 @@ export function SortableTree({
   if (flattenedItems.length === 0 && placeholder) {
     return <TreeItemPlaceholder title={placeholder.title} subtitle={placeholder.subtitle} />
   }
+
+  // Determine if we should show the drop indicator and where
+  const showDropIndicator = activeId && projected && overId && overId !== activeId
+  const dropIndicatorIndex = projected?.insertIndex ?? -1
 
   return (
     <DndContext
@@ -277,30 +322,63 @@ export function SortableTree({
     >
       <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
         <div>
-          {flattenedItems.map((item) => (
-            <SortableTreeItem
-              key={item._key}
-              id={item._key}
-              item={item}
-              depth={
-                item._key === activeId && projected ? projected.depth : item.depth
-              }
-              indentationWidth={INDENTATION_WIDTH}
-              onToggle={() => handleToggle(item)}
-              isDragging={item._key === activeId}
-              isOver={item._key === overId}
-              canDrag={!!item.publishedId}
-            />
-          ))}
+          {flattenedItems.map((item, index) => {
+            const isActiveItem = item._key === activeId
+            const isOverItem = item._key === overId
+
+            return (
+              <React.Fragment key={item._key}>
+                {/* Show drop indicator before this item if applicable */}
+                {showDropIndicator &&
+                  dropIndicatorIndex === index &&
+                  projected.insertPosition === 'before' && (
+                    <DropIndicator
+                      depth={projected.depth}
+                      indentationWidth={INDENTATION_WIDTH}
+                    />
+                  )}
+
+                <SortableTreeItem
+                  id={item._key}
+                  item={item}
+                  depth={isActiveItem && projected ? projected.depth : item.depth}
+                  indentationWidth={INDENTATION_WIDTH}
+                  onToggle={() => handleToggle(item)}
+                  isDragging={isActiveItem}
+                  isOver={isOverItem && !isActiveItem}
+                  canDrag={!!item.publishedId}
+                />
+
+                {/* Show drop indicator after this item if applicable */}
+                {showDropIndicator &&
+                  dropIndicatorIndex === index + 1 &&
+                  projected.insertPosition === 'after' && (
+                    <DropIndicator
+                      depth={projected.depth}
+                      indentationWidth={INDENTATION_WIDTH}
+                    />
+                  )}
+              </React.Fragment>
+            )
+          })}
+
+          {/* Show drop indicator at the end if dropping after last item */}
+          {showDropIndicator &&
+            dropIndicatorIndex >= flattenedItems.length && (
+              <DropIndicator
+                depth={projected.depth}
+                indentationWidth={INDENTATION_WIDTH}
+              />
+            )}
         </div>
       </SortableContext>
 
       <DragOverlay>
-        {activeItem ? (
+        {activeItem && projected ? (
           <SortableTreeItem
             id={activeItem._key}
             item={activeItem}
-            depth={activeItem.depth}
+            depth={projected.depth}
             indentationWidth={INDENTATION_WIDTH}
             clone
             canDrag

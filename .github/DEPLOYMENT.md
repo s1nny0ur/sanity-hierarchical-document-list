@@ -2,68 +2,136 @@
 
 This guide explains how to publish new versions of `@considered-vision/sanity-hierarchical-document-list` to npm.
 
+## How It Works
+
+This project uses [semantic-release](https://semantic-release.gitbook.io/) to automate versioning and publishing. When you push to `main`, semantic-release analyzes your commit messages and automatically:
+
+1. Determines the next version number
+2. Updates `package.json`
+3. Creates a git tag
+4. Publishes to npm
+5. Creates a GitHub release with changelog
+
+**No manual version bumping required!**
+
 ## Prerequisites
 
 1. **NPM_TOKEN secret** must be configured in GitHub repository settings
    - Go to Settings → Secrets and variables → Actions
    - Add a secret named `NPM_TOKEN` with your npm access token
 
+## Commit Message Format
+
+Semantic-release uses [Conventional Commits](https://www.conventionalcommits.org/) to determine version bumps:
+
+### Patch Release (0.0.x) - Bug Fixes
+```
+fix: resolve null pointer in tree component
+fix(ui): correct button alignment
+```
+
+### Minor Release (0.x.0) - New Features
+```
+feat: add drag-and-drop reordering
+feat(api): support custom document types
+```
+
+### Major Release (x.0.0) - Breaking Changes
+```
+feat!: remove deprecated API methods
+
+BREAKING CHANGE: The `oldMethod()` has been removed.
+```
+
+Or with a footer:
+```
+feat: redesign component API
+
+BREAKING CHANGE: Props have been renamed for consistency.
+```
+
+### Other Commit Types (No Release)
+These won't trigger a release but are good for documentation:
+```
+docs: update README
+chore: upgrade dependencies
+style: format code
+refactor: simplify logic
+test: add unit tests
+ci: update workflow
+```
+
 ## Publishing a New Version
 
-### 1. Update the version in package.json
+### Automatic (Recommended)
+
+Simply push your changes to `main`:
 
 ```bash
-# For a patch release (bug fixes)
-npm version patch
-
-# For a minor release (new features, backwards compatible)
-npm version minor
-
-# For a major release (breaking changes)
-npm version major
+git add .
+git commit -m "feat: add new feature"
+git push origin main
 ```
 
-This will:
-- Update the version in `package.json`
-- Create a git commit
-- Create a git tag (e.g., `v3.0.1`)
+Semantic-release will:
+- Analyze commits since last release
+- Determine if a release is needed
+- Bump version and publish automatically
 
-### 2. Push the tag to trigger the release
-
-```bash
-git push origin main --follow-tags
-```
-
-Or push the tag separately:
-
-```bash
-git push origin v3.0.1
-```
-
-### 3. Monitor the release
+### Monitor the Release
 
 1. Go to the [Actions tab](../../actions)
 2. Watch the "CI & Release" workflow
-3. Once complete, verify the package on [npm](https://www.npmjs.com/package/@considered-vision/sanity-hierarchical-document-list)
+3. Once complete, verify:
+   - [npm package](https://www.npmjs.com/package/@considered-vision/sanity-hierarchical-document-list)
+   - [GitHub Releases](../../releases)
 
-## Manual Release (Fallback)
+### Manual Trigger (Fallback)
 
-If tag-based release fails, you can trigger manually:
+If automatic release fails or you need to force a release:
 
 1. Go to [Actions → CI & Release](../../actions/workflows/main.yml)
 2. Click "Run workflow"
 3. Check ✓ "Release new version to npm"
 4. Click "Run workflow"
 
-## Version Naming
+## Examples
 
-We follow [Semantic Versioning](https://semver.org/):
+### Bug Fix
+```bash
+git commit -m "fix: handle empty document arrays gracefully"
+git push origin main
+# → Releases 3.0.1 (patch bump)
+```
 
-- **MAJOR** (x.0.0): Breaking changes
-- **MINOR** (0.x.0): New features, backwards compatible
-- **PATCH** (0.0.x): Bug fixes, backwards compatible
+### New Feature
+```bash
+git commit -m "feat: add keyboard navigation support"
+git push origin main
+# → Releases 3.1.0 (minor bump)
+```
+
+### Breaking Change
+```bash
+git commit -m "feat!: require React 18+"
+git push origin main
+# → Releases 4.0.0 (major bump)
+```
+
+### Multiple Commits
+```bash
+git commit -m "fix: resolve memory leak"
+git commit -m "feat: add search functionality"
+git push origin main
+# → Releases 3.1.0 (highest bump wins - feat > fix)
+```
 
 ## Troubleshooting
+
+### "No release published"
+- Check that your commits follow the conventional format
+- Only `fix:` and `feat:` trigger releases
+- Commits like `chore:`, `docs:`, `style:` don't trigger releases
 
 ### "npm ERR! 403 Forbidden"
 - Check that `NPM_TOKEN` secret is set correctly
@@ -75,15 +143,17 @@ We follow [Semantic Versioning](https://semver.org/):
 - Run `npm run build` locally to debug
 - Ensure all TypeScript errors are resolved
 
-### Tag already exists
+### Version wasn't bumped correctly
+Semantic-release analyzes commits since the last git tag. Ensure:
+- Previous releases created proper tags (e.g., `v3.0.0`)
+- You're not rewriting history after releases
+
+## Dry Run (Local Testing)
+
+To preview what semantic-release would do without publishing:
+
 ```bash
-# Delete local tag
-git tag -d v3.0.0
-
-# Delete remote tag
-git push origin :refs/tags/v3.0.0
-
-# Create new tag
-git tag v3.0.0
-git push origin v3.0.0
+npx semantic-release --dry-run
 ```
+
+This shows the next version and changelog without making changes.
