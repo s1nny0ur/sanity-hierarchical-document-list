@@ -21,7 +21,7 @@ export interface TreeItemPlaceholderProps {
   subtitle?: string
 }
 
-export function TreeItemPlaceholder({title, subtitle}: TreeItemPlaceholderProps) {
+export function TreeItemPlaceholder({title, subtitle}: TreeItemPlaceholderProps): React.ReactElement {
   return (
     <PlaceholderRoot>
       <Box marginBottom={subtitle ? 2 : 0}>

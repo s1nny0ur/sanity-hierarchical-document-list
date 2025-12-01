@@ -1,3 +1,5 @@
+import {ReactNode} from 'react'
+
 /**
  * react-sortable-tree emits a lot of random errors when dragging to invalid states,
  * even when drag-targets are disabled.
@@ -9,6 +11,6 @@
  * event handlers, so there is addtional workarounds in the
  * DnDManager.
  *  */
-export const TreeEditorErrorBoundary = (props: any) => {
+export const TreeEditorErrorBoundary = (props: {children: ReactNode}): ReactNode => {
   return props.children
 }

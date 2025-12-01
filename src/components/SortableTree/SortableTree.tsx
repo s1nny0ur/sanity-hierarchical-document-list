@@ -1,4 +1,5 @@
 import {
+  closestCenter,
   DndContext,
   DragEndEvent,
   DragMoveEvent,
@@ -8,7 +9,6 @@ import {
   MeasuringStrategy,
   PointerSensor,
   UniqueIdentifier,
-  closestCenter,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -18,8 +18,8 @@ import {
 } from '@dnd-kit/sortable'
 import * as React from 'react'
 import {useCallback, useMemo, useState} from 'react'
+
 import {LocalTreeItem} from '../../types'
-import {flattenTree, getNodeDepth} from '../../utils/treeUtils'
 import {SortableTreeItem} from './SortableTreeItem'
 import {TreeItemPlaceholder} from './TreeItemPlaceholder'
 
@@ -129,7 +129,7 @@ export function SortableTree({
   onVisibilityToggle,
   canDrop,
   placeholder,
-}: SortableTreeProps) {
+}: SortableTreeProps): React.ReactElement | null {
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
   const [overId, setOverId] = useState<UniqueIdentifier | null>(null)
   const [offsetLeft, setOffsetLeft] = useState(0)
@@ -177,10 +177,14 @@ export function SortableTree({
     ({active, over}: DragEndEvent) => {
       resetState()
 
-      if (!over || !projected) return
+      if (!over || !projected) {
+ return
+}
 
-      const activeItem = flattenedItems.find(({_key}) => _key === active.id)
-      if (!activeItem) return
+      const draggedItem = flattenedItems.find(({_key}) => _key === active.id)
+      if (!draggedItem) {
+ return
+}
 
       // Find the new parent node
       const newParentNode = projected.parentId
@@ -196,7 +200,7 @@ export function SortableTree({
       if (
         canDrop &&
         !canDrop({
-          node: activeItem,
+          node: draggedItem,
           nextParentNode: newParentNode ?? null,
           depth: projected.depth,
         })
@@ -209,8 +213,8 @@ export function SortableTree({
 
       // Calculate the path for the new position
       const nextPath = projected.parentId
-        ? [projected.parentId, activeItem._key]
-        : [activeItem._key]
+        ? [projected.parentId, draggedItem._key]
+        : [draggedItem._key]
 
       // Rebuild tree with the new structure
       const newTreeData = buildTreeFromFlatItems(
@@ -221,7 +225,7 @@ export function SortableTree({
       )
 
       onMoveNode({
-        node: activeItem,
+        node: draggedItem,
         treeData: newTreeData,
         nextPath,
         nextTreeIndex: overIndex,

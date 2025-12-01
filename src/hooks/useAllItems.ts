@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {SanityDocument, useClient} from 'sanity'
+
 import {AllItems, TreeInputOptions} from '../types'
 import {isDraft, unprefixId} from '../utils/idUtils'
 

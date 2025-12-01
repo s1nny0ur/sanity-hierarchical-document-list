@@ -1,14 +1,14 @@
 import {PatchEvent, PathSegment, prefixPath, setIfMissing} from 'sanity'
+
 import {LocalTreeItem, NodeProps} from '../types'
 import {
-  HandleMovedNode,
-  HandleMovedNodeData,
   getAddItemPatch,
   getDuplicateItemPatch,
-  getMoveItemPatch,
   getMovedNodePatch,
-  getRemoveItemPatch
-} from '../utils/treePatches'
+  getMoveItemPatch,
+  getRemoveItemPatch,
+  HandleMovedNode,
+  HandleMovedNodeData} from '../utils/treePatches'
 
 export default function useTreeOperationsProvider(props: {
   patchPrefix?: PathSegment

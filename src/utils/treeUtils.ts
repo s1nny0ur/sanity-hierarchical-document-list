@@ -1,4 +1,4 @@
-import {StoredTreeItem, LocalTreeItem} from '../types'
+import {StoredTreeItem} from '../types'
 
 /**
  * Type for tree items with children (nested structure)
@@ -147,8 +147,11 @@ export function getNodeDepth<T extends StoredTreeItem>(
   let currentKey = node.parent
 
   while (currentKey) {
-    const parent = allItems.find(item => item._key === currentKey)
-    if (!parent) break
+    const parentKey = currentKey
+    const parent = allItems.find((item) => item._key === parentKey)
+    if (!parent) {
+ break
+}
     depth++
     currentKey = parent.parent
   }

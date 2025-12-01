@@ -1,8 +1,9 @@
+import {BookIcon, UserIcon} from '@sanity/icons'
+import {visionTool} from '@sanity/vision'
 import {defineConfig, defineField, defineType} from 'sanity'
 import {structureTool} from 'sanity/structure'
-import {visionTool} from '@sanity/vision'
-import {UserIcon, BookIcon} from '@sanity/icons'
-import {hierarchicalDocumentList, hierarchyTree, createDeskHierarchy} from './src'
+
+import {createDeskHierarchy, hierarchicalDocumentList, hierarchyTree} from './src'
 
 const AUTHOR_ROLES = [
   {value: 'developer', title: 'Developer'},

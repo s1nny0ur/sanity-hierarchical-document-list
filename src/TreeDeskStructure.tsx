@@ -1,6 +1,7 @@
 import {Box, Flex, Spinner} from '@sanity/ui'
 import * as React from 'react'
 import {PatchEvent, useDocumentOperation, useEditState} from 'sanity'
+
 import DeskWarning from './components/DeskWarning'
 import TreeEditor from './components/TreeEditor'
 import {DocumentOperations, StoredTreeItem, TreeDeskStructureProps} from './types'

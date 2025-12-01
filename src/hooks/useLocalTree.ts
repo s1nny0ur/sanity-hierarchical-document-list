@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import {AllItems, LocalTreeItem, StoredTreeItem, VisibilityMap} from '../types'
 import {dataToEditorTree} from '../utils/treeData'
 

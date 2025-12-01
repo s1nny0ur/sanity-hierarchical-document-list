@@ -1,4 +1,5 @@
 import {definePlugin} from 'sanity'
+
 import {default as createDeskHierarchy, type TreeProps} from './createDeskHierarchy'
 import {default as createHierarchicalSchemas} from './createHierarchicalSchemas'
 import {default as hierarchyTree} from './schemas/hierarchy.tree'

@@ -1,14 +1,14 @@
 import * as React from 'react'
 import {ArraySchemaType} from 'sanity'
+
 import {DEFAULT_FIELD_KEY} from './TreeDeskStructure'
 import TreeInputComponent from './TreeInputComponent'
 import {TreeDeskStructureProps, TreeFieldSchema} from './types'
 import {
+  getSchemaTypeName,
   INTERNAL_NODE_ARRAY_TYPE,
   INTERNAL_NODE_TYPE,
-  INTERNAL_NODE_VALUE_TYPE,
-  getSchemaTypeName
-} from './utils/injectNodeTypeInPatches'
+  INTERNAL_NODE_VALUE_TYPE} from './utils/injectNodeTypeInPatches'
 import throwError from './utils/throwError'
 
 type SchemaOptions = Omit<TreeDeskStructureProps, 'documentId' | 'maxDepth'>
@@ -134,7 +134,7 @@ function createHierarchicalDocType(options: SchemaOptions) {
   }
 }
 
-export default function createHierarchicalSchemas(options: SchemaOptions) {
+export default function createHierarchicalSchemas(options: SchemaOptions): Record<string, unknown>[] {
   if (!Array.isArray(options.referenceTo) || options.referenceTo.length <= 0) {
     throwError('invalidReferenceTo')
   }

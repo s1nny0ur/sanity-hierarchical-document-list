@@ -36,10 +36,10 @@ const deskTreeValidator = (props: TreeProps): React.FC => {
     throwError('invalidReferenceTo', `(documentId "${documentId}")`)
   }
 
-  return (deskProps) => <TreeDeskStructure {...deskProps} options={props} />
+  return (deskProps): React.ReactElement => <TreeDeskStructure {...deskProps} options={props} />
 }
 
-export default function createDeskHierarchy(props: TreeProps) {
+export default function createDeskHierarchy(props: TreeProps): ReturnType<StructureBuilder['listItem']> {
   const {documentId, referenceTo, referenceOptions, context, S, creatableTypes} = props
   if (!S || !context) {
     throw new Error('Invalid configuration. S or context props are undefined. ' +

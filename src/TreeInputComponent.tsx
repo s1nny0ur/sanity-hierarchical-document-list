@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {FormField, FormNodePresence, PatchEvent, Path} from 'sanity'
+
 import TreeEditor from './components/TreeEditor'
 import {StoredTreeItem, TreeFieldSchema} from './types'
 import injectNodeTypeInPatches, {DEFAULT_DOC_TYPE} from './utils/injectNodeTypeInPatches'

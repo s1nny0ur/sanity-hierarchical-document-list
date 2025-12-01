@@ -2,9 +2,10 @@ import {EditIcon, PublishIcon} from '@sanity/icons'
 import {Box, Inline, Text, Tooltip} from '@sanity/ui'
 import * as React from 'react'
 import {SanityDocument, TextWithTone, useTimeAgo} from 'sanity'
+
 import {DocumentPair} from '../types'
 
-export function TimeAgo({time}: {time: string | Date}) {
+export function TimeAgo({time}: {time: string | Date}): React.ReactElement {
   const timeAgo = useTimeAgo(time)
 
   return (

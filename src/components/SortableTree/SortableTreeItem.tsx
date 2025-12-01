@@ -2,10 +2,11 @@ import {useSortable} from '@dnd-kit/sortable'
 import {CSS} from '@dnd-kit/utilities'
 import {cyan, gray, red} from '@sanity/color'
 import {ChevronDownIcon, ChevronRightIcon, DragHandleIcon} from '@sanity/icons'
-import {Box, Button, Flex} from '@sanity/ui'
+import {Button, Flex} from '@sanity/ui'
 import * as React from 'react'
 import {CSSProperties} from 'react'
 import styled from 'styled-components'
+
 import {LocalTreeItem, NodeProps} from '../../types'
 
 const Root = styled.div`
@@ -81,10 +82,9 @@ export function SortableTreeItem({
   indentationWidth,
   clone,
   isDragging,
-  isOver,
   canDrag = true,
   onToggle,
-}: SortableTreeItemProps) {
+}: SortableTreeItemProps): React.ReactElement {
   const {
     attributes,
     listeners,
@@ -153,7 +153,9 @@ export function SortableTreeItem({
 
   // Render expand/collapse button
   const ExpandButton = React.useMemo(() => {
-    if (!hasChildren) return null
+    if (!hasChildren) {
+ return null
+}
 
     return (
       <div
@@ -165,12 +167,12 @@ export function SortableTreeItem({
         }}
       >
         <Button
-          aria-label={item.expanded !== false ? 'Collapse' : 'Expand'}
+          aria-label={item.expanded === false ? 'Expand' : 'Collapse'}
           icon={
-            item.expanded !== false ? (
-              <ChevronDownIcon color={gray[200].hex} />
-            ) : (
+            item.expanded === false ? (
               <ChevronRightIcon color={gray[200].hex} />
+            ) : (
+              <ChevronDownIcon color={gray[200].hex} />
             )
           }
           mode="bleed"
@@ -188,7 +190,7 @@ export function SortableTreeItem({
       ref={setNodeRef}
       style={{
         ...style,
-        paddingLeft: clone ? undefined : `${10 + indentationWidth * depth}px`,
+        paddingLeft: clone ? undefined : `${10 + (indentationWidth * depth)}px`,
       }}
       data-clone={clone}
       data-ghost={isDragging || isSortableDragging}

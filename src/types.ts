@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {ArraySchemaType, ObjectSchemaType, SanityDocument} from 'sanity'
+
 import {INTERNAL_NODE_TYPE, INTERNAL_NODE_VALUE_TYPE} from './utils/injectNodeTypeInPatches'
 
 interface SanityReference {

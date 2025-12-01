@@ -1,5 +1,6 @@
 import {randomKey} from '@sanity/util/content'
 import {SanityDocument} from 'sanity'
+
 import DocumentInNode from '../components/DocumentInNode'
 import NodeActions from '../components/NodeActions'
 import {
