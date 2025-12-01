@@ -37,7 +37,7 @@ export function DropIndicator({
   return (
     <div
       style={{
-        paddingLeft: `${10 + indentationWidth * depth}px`,
+        paddingLeft: `${10 + (indentationWidth * depth)}px`,
         paddingRight: '10px',
       }}
     >

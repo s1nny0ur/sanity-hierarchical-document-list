@@ -76,14 +76,23 @@ function flattenWithDepth(
   }, [])
 }
 
-function getProjection(
-  items: FlattenedItem[],
-  activeId: UniqueIdentifier,
-  overId: UniqueIdentifier,
-  dragOffset: number,
-  indentationWidth: number,
+interface ProjectionOptions {
+  items: FlattenedItem[]
+  activeId: UniqueIdentifier
+  overId: UniqueIdentifier
+  dragOffset: number
+  indentationWidth: number
   currentProjectedDepth: number | null
-): {
+}
+
+function getProjection({
+  items,
+  activeId,
+  overId,
+  dragOffset,
+  indentationWidth,
+  currentProjectedDepth,
+}: ProjectionOptions): {
   depth: number
   parentId: string | null
   overId: UniqueIdentifier
@@ -184,14 +193,14 @@ export function SortableTree({
 
   const projected = useMemo(() => {
     if (activeId && overId) {
-      const projection = getProjection(
-        flattenedItems,
+      const projection = getProjection({
+        items: flattenedItems,
         activeId,
         overId,
-        offsetLeft,
-        INDENTATION_WIDTH,
-        projectedDepthRef.current
-      )
+        dragOffset: offsetLeft,
+        indentationWidth: INDENTATION_WIDTH,
+        currentProjectedDepth: projectedDepthRef.current,
+      })
       // Update the ref for next calculation (hysteresis)
       projectedDepthRef.current = projection.depth
       return projection
