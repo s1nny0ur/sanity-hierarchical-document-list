@@ -2,7 +2,7 @@ import * as React from 'react'
 import {FormField, FormNodePresence, PatchEvent, Path} from 'sanity'
 
 import TreeEditor from './components/TreeEditor'
-import {StoredTreeItem, TreeFieldSchema} from './types'
+import {StoredTreeItem, TreeFieldSchema, TreeOperationMeta} from './types'
 import injectNodeTypeInPatches, {DEFAULT_DOC_TYPE} from './utils/injectNodeTypeInPatches'
 
 export interface TreeInputComponentProps {
@@ -20,12 +20,16 @@ export interface TreeInputComponentProps {
 const TreeInputComponent: React.FC<TreeInputComponentProps> = (props) => {
   const documentType = props.type.options.documentType || DEFAULT_DOC_TYPE
 
+  // Note: The onTreeChange callback is only supported when using createDeskHierarchy.
+  // Form field inputs use Sanity's standard onChange mechanism which doesn't support
+  // the callback. For real-time tree sync, use createDeskHierarchy instead.
   const onChange = React.useCallback(
-    (patch: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (patch: PatchEvent, _operationMeta?: TreeOperationMeta) => {
       const patches = injectNodeTypeInPatches(patch?.patches, documentType)
       props.onChange(new PatchEvent(patches))
     },
-    [props.onChange]
+    [props.onChange, documentType]
   )
 
   return (

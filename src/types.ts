@@ -119,6 +119,25 @@ export interface TreeDeskStructureProps extends TreeInputOptions {
    * `tree` by default.
    */
   fieldKeyInDocument?: string
+
+  /**
+   * Callback fired after every tree mutation.
+   * Use this to sync paths/slugs back to individual documents.
+   *
+   * @remarks
+   * - Callback is invoked asynchronously (non-blocking)
+   * - Errors are logged but do not interrupt tree operations
+   * - Called after patch is executed, not before
+   */
+  onTreeChange?: TreeChangeCallback
+
+  /**
+   * Enable or disable the onTreeChange callback.
+   * Useful for conditionally disabling sync in certain environments.
+   *
+   * Default: `true` (callback fires if provided)
+   */
+  enableTreeChangeCallback?: boolean
 }
 
 export interface DocumentPair {
@@ -156,3 +175,68 @@ export interface NodeProps {
 }
 
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>
+
+// ============================================================================
+// Tree Change Callback Types
+// ============================================================================
+
+/**
+ * Information about a document's position in the tree hierarchy.
+ */
+export interface DocumentPathInfo {
+  /** Published document _id */
+  docId: string
+
+  /** Document _type (from value.docType) */
+  docType: string
+
+  /** Ordered array of ancestor document _ids (root to parent) */
+  ancestors: string[]
+
+  /** This document's _key in the tree */
+  nodeKey: string
+
+  /** Parent's _key in the tree (null if root level) */
+  parentNodeKey: string | null
+
+  /** Zero-based depth in hierarchy */
+  depth: number
+
+  /** Position among siblings (zero-based) */
+  siblingIndex: number
+}
+
+/**
+ * Event payload passed to the onTreeChange callback.
+ */
+export interface TreeChangeEvent {
+  /** The tree document ID */
+  treeDocId: string
+
+  /** Full tree state after the mutation */
+  tree: StoredTreeItem[]
+
+  /** Type of operation that triggered the change */
+  operation: 'add' | 'remove' | 'move' | 'duplicate' | 'reorder'
+
+  /** Document references affected by this change (published _ids) */
+  affectedDocIds: string[]
+
+  /** Computed paths for ALL documents in tree */
+  paths: DocumentPathInfo[]
+}
+
+/**
+ * Callback type for tree change events.
+ */
+export type TreeChangeCallback = (event: TreeChangeEvent) => void | Promise<void>
+
+/**
+ * Metadata about a tree operation, used internally to track what kind of
+ * mutation occurred and which nodes were affected.
+ */
+export interface TreeOperationMeta {
+  operation: 'add' | 'remove' | 'move' | 'duplicate' | 'reorder'
+  /** _keys of directly affected nodes */
+  nodeKeys: string[]
+}

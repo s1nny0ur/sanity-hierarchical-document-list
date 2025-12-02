@@ -8,7 +8,13 @@ import useAllItems from '../hooks/useAllItems'
 import useLocalTree from '../hooks/useLocalTree'
 import {TreeOperationsContext} from '../hooks/useTreeOperations'
 import useTreeOperationsProvider from '../hooks/useTreeOperationsProvider'
-import {LocalTreeItem, Optional, StoredTreeItem, TreeDeskStructureProps} from '../types'
+import {
+  LocalTreeItem,
+  Optional,
+  StoredTreeItem,
+  TreeDeskStructureProps,
+  TreeOperationMeta,
+} from '../types'
 import getTreeHeight from '../utils/getTreeHeight'
 import {getUnaddedItems} from '../utils/treeData'
 import {HandleMovedNodeData} from '../utils/treePatches'
@@ -22,7 +28,7 @@ import {TreeEditorErrorBoundary} from './TreeEditorErrorBoundary'
  */
 const TreeEditor: React.FC<{
   tree: StoredTreeItem[]
-  onChange: (patch: PatchEvent) => void
+  onChange: (patch: PatchEvent, meta?: TreeOperationMeta) => void
   options: Optional<TreeDeskStructureProps, 'documentId'>
   patchPrefix?: string
 }> = (props) => {

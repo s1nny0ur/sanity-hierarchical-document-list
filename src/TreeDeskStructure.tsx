@@ -4,7 +4,14 @@ import {PatchEvent, useDocumentOperation, useEditState} from 'sanity'
 
 import DeskWarning from './components/DeskWarning'
 import TreeEditor from './components/TreeEditor'
-import {DocumentOperations, StoredTreeItem, TreeDeskStructureProps} from './types'
+import {
+  DocumentOperations,
+  StoredTreeItem,
+  TreeChangeEvent,
+  TreeDeskStructureProps,
+  TreeOperationMeta,
+} from './types'
+import {computeAllPaths, getAffectedDocIds} from './utils/computePaths'
 import {toGradient} from './utils/gradientPatchAdapter'
 import injectNodeTypeInPatches, {DEFAULT_DOC_TYPE} from './utils/injectNodeTypeInPatches'
 
@@ -22,22 +29,63 @@ const TreeDeskStructure: React.FC<ComponentProps> = (props) => {
 
   const treeValue = (published?.[treeFieldKey] || []) as StoredTreeItem[]
 
+  // Track pending operation for callback
+  const pendingOperationRef = React.useRef<TreeOperationMeta | null>(null)
+
   const handleChange = React.useCallback(
-    (patchEvent: PatchEvent) => {
+    (patchEvent: PatchEvent, operationMeta?: TreeOperationMeta) => {
       if (!patch?.execute) {
         return
       }
+
+      // Store operation metadata before patch executes
+      if (operationMeta) {
+        pendingOperationRef.current = operationMeta
+      }
+
       patch.execute(toGradient(injectNodeTypeInPatches(patchEvent.patches, treeDocType)))
     },
-    [patch]
+    [patch, treeDocType]
   )
+
+  // Fire callback when tree value changes (after patch applied)
+  React.useEffect(() => {
+    const {onTreeChange, enableTreeChangeCallback = true} = props.options
+
+    // Skip if disabled, no callback, or no pending operation
+    if (!enableTreeChangeCallback || !onTreeChange || !pendingOperationRef.current) {
+      return
+    }
+
+    const {operation, nodeKeys} = pendingOperationRef.current
+    pendingOperationRef.current = null
+
+    // Compute callback payload
+    const event: TreeChangeEvent = {
+      treeDocId: props.options.documentId,
+      tree: treeValue,
+      operation,
+      affectedDocIds: getAffectedDocIds(treeValue, nodeKeys),
+      paths: computeAllPaths(treeValue),
+    }
+
+    // Invoke async, catch errors to prevent breaking UI
+    Promise.resolve(onTreeChange(event)).catch((err) => {
+      console.error('[hierarchical-document-list] onTreeChange error:', err)
+    })
+  }, [
+    treeValue,
+    props.options.documentId,
+    props.options.onTreeChange,
+    props.options.enableTreeChangeCallback,
+  ])
 
   React.useEffect(() => {
     if (!published?._id && patch?.execute && !patch?.disabled) {
       // If no published document, create it
       patch.execute([{setIfMissing: {[treeFieldKey]: []}}])
     }
-  }, [published?._id, patch])
+  }, [published?._id, patch, treeFieldKey])
 
   if (!liveEdit) {
     return (

@@ -339,6 +339,163 @@ We're considering adapting this input to support any type of nest-able data, not
 
 ---
 
+## Tree Change Callback
+
+The `onTreeChange` callback allows you to react to tree mutations in real-time. This is useful for syncing hierarchy data back to individual documents, such as updating slugs, breadcrumbs, or path fields.
+
+### Basic Usage
+
+```ts
+import {createDeskHierarchy} from '@considered-vision/sanity-hierarchical-document-list'
+
+createDeskHierarchy({
+  S,
+  context,
+  title: 'Main Navigation',
+  documentId: 'main-nav',
+  referenceTo: ['page', 'article'],
+
+  onTreeChange: async (event) => {
+    console.log(`Tree ${event.operation}:`, event.affectedDocIds)
+    console.log('All paths:', event.paths)
+  }
+})
+```
+
+### Callback Event Properties
+
+The `TreeChangeEvent` object passed to your callback includes:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `treeDocId` | `string` | The tree document ID |
+| `tree` | `StoredTreeItem[]` | Full tree state after the mutation |
+| `operation` | `'add' \| 'remove' \| 'move' \| 'duplicate' \| 'reorder'` | Type of operation that triggered the change |
+| `affectedDocIds` | `string[]` | Document IDs affected by this change (includes descendants) |
+| `paths` | `DocumentPathInfo[]` | Computed paths for ALL documents in tree |
+
+Each `DocumentPathInfo` object contains:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `docId` | `string` | Published document `_id` |
+| `docType` | `string` | Document `_type` |
+| `ancestors` | `string[]` | Ordered array of ancestor document `_id`s (root to parent) |
+| `nodeKey` | `string` | This document's `_key` in the tree |
+| `parentNodeKey` | `string \| null` | Parent's `_key` in the tree (`null` if root level) |
+| `depth` | `number` | Zero-based depth in hierarchy |
+| `siblingIndex` | `number` | Position among siblings (zero-based) |
+
+### Syncing Paths to Documents
+
+A common use case is syncing hierarchy information back to individual documents:
+
+```ts
+import {createDeskHierarchy} from '@considered-vision/sanity-hierarchical-document-list'
+
+export const structure = (S, context) => {
+  const client = context.getClient({apiVersion: '2023-01-01'})
+
+  return S.list()
+    .title('Content')
+    .items([
+      createDeskHierarchy({
+        S,
+        context,
+        title: 'Main Navigation',
+        documentId: 'main-nav',
+        referenceTo: ['page', 'article'],
+
+        onTreeChange: async (event) => {
+          const transaction = client.transaction()
+
+          for (const pathInfo of event.paths) {
+            // Only update documents that were affected by this change
+            if (event.affectedDocIds.includes(pathInfo.docId)) {
+              transaction.patch(pathInfo.docId, {
+                set: {
+                  _hierarchy: {
+                    ancestors: pathInfo.ancestors,
+                    depth: pathInfo.depth,
+                    siblingIndex: pathInfo.siblingIndex,
+                    treeId: event.treeDocId
+                  }
+                }
+              })
+            }
+          }
+
+          await transaction.commit()
+        }
+      })
+    ])
+}
+```
+
+### Enabling/Disabling the Callback
+
+Use `enableTreeChangeCallback` to conditionally enable or disable the callback:
+
+```ts
+createDeskHierarchy({
+  // ...
+  onTreeChange: handleTreeChange,
+  enableTreeChangeCallback: false  // Callback will not fire
+})
+```
+
+| `onTreeChange` | `enableTreeChangeCallback` | Result |
+|----------------|---------------------------|--------|
+| undefined | undefined | No callback |
+| undefined | true | No callback |
+| defined | undefined | Callback fires (default) |
+| defined | true | Callback fires |
+| defined | false | No callback |
+
+**Environment-based toggle:**
+
+```ts
+createDeskHierarchy({
+  // ...
+  onTreeChange: handleTreeChange,
+  enableTreeChangeCallback: process.env.SANITY_STUDIO_ENABLE_TREE_SYNC === 'true'
+})
+```
+
+**Role-based toggle:**
+
+```ts
+createDeskHierarchy({
+  // ...
+  onTreeChange: handleTreeChange,
+  enableTreeChangeCallback: context.currentUser?.roles.some(
+    r => r.name === 'administrator'
+  )
+})
+```
+
+### TypeScript Types
+
+The plugin exports all relevant types for TypeScript users:
+
+```ts
+import type {
+  TreeChangeEvent,
+  TreeChangeCallback,
+  DocumentPathInfo,
+  TreeOperationMeta
+} from '@considered-vision/sanity-hierarchical-document-list'
+```
+
+### Important Notes
+
+- **Non-blocking**: Callback errors are caught and logged to console, they will not break tree operations
+- **Async support**: Both sync and async callbacks are supported
+- **No debouncing**: Each tree mutation fires the callback independently. Implement your own debouncing if needed
+- **Desk structure only**: The callback is only supported when using `createDeskHierarchy`. Form field inputs do not support callbacks
+
+---
+
 ## License
 
 MIT-licensed. See LICENSE.

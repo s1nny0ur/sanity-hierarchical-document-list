@@ -1,6 +1,6 @@
 import {PatchEvent, PathSegment, prefixPath, setIfMissing} from 'sanity'
 
-import {LocalTreeItem, NodeProps} from '../types'
+import {LocalTreeItem, NodeProps, TreeOperationMeta} from '../types'
 import {
   getAddItemPatch,
   getDuplicateItemPatch,
@@ -12,7 +12,7 @@ import {
 
 export default function useTreeOperationsProvider(props: {
   patchPrefix?: PathSegment
-  onChange: (patch: PatchEvent) => void
+  onChange: (patch: PatchEvent, meta?: TreeOperationMeta) => void
   localTree: LocalTreeItem[]
 }): {
   handleMovedNode: HandleMovedNode
@@ -24,11 +24,11 @@ export default function useTreeOperationsProvider(props: {
 } {
   const {localTree} = props
 
-  function runPatches(patches: any) {
+  function runPatches(patches: any, meta: TreeOperationMeta) {
     const finalPatches = [
       // Ensure tree array exists before any operation
       setIfMissing([]),
-      ...(patches || [])
+      ...(patches || []),
     ]
     let patchEvent = PatchEvent.from(finalPatches)
     if (props.patchPrefix) {
@@ -36,23 +36,35 @@ export default function useTreeOperationsProvider(props: {
         finalPatches.map((patch) => prefixPath(patch, props.patchPrefix as PathSegment))
       )
     }
-    props.onChange(patchEvent)
+    props.onChange(patchEvent, meta)
   }
 
   function handleMovedNode(data: HandleMovedNodeData & {node: LocalTreeItem}) {
-    runPatches(getMovedNodePatch(data))
+    runPatches(getMovedNodePatch(data), {
+      operation: 'move',
+      nodeKeys: [data.node._key],
+    })
   }
 
   function addItem(item: LocalTreeItem) {
-    runPatches(getAddItemPatch(item))
+    runPatches(getAddItemPatch(item), {
+      operation: 'add',
+      nodeKeys: [item._key],
+    })
   }
 
   function duplicateItem(nodeProps: NodeProps & {node: LocalTreeItem}) {
-    runPatches(getDuplicateItemPatch(nodeProps))
+    runPatches(getDuplicateItemPatch(nodeProps), {
+      operation: 'duplicate',
+      nodeKeys: [nodeProps.node._key],
+    })
   }
 
   function removeItem(nodeProps: NodeProps) {
-    runPatches(getRemoveItemPatch(nodeProps))
+    runPatches(getRemoveItemPatch(nodeProps), {
+      operation: 'remove',
+      nodeKeys: [nodeProps.node._key],
+    })
   }
 
   function moveItemUp(nodeProps: NodeProps) {
@@ -60,8 +72,12 @@ export default function useTreeOperationsProvider(props: {
       getMoveItemPatch({
         nodeProps,
         localTree,
-        direction: 'up'
-      })
+        direction: 'up',
+      }),
+      {
+        operation: 'reorder',
+        nodeKeys: [nodeProps.node._key],
+      }
     )
   }
 
@@ -70,8 +86,12 @@ export default function useTreeOperationsProvider(props: {
       getMoveItemPatch({
         nodeProps,
         localTree,
-        direction: 'down'
-      })
+        direction: 'down',
+      }),
+      {
+        operation: 'reorder',
+        nodeKeys: [nodeProps.node._key],
+      }
     )
   }
 

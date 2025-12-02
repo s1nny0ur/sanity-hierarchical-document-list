@@ -5,6 +5,14 @@ import {default as createHierarchicalSchemas} from './createHierarchicalSchemas'
 import {default as hierarchyTree} from './schemas/hierarchy.tree'
 import {default as flatDataToTree} from './utils/flatDataToTree'
 
+// Export new types for consumers
+export type {
+  DocumentPathInfo,
+  TreeChangeCallback,
+  TreeChangeEvent,
+  TreeOperationMeta,
+} from './types'
+
 export {createDeskHierarchy, createHierarchicalSchemas, flatDataToTree, hierarchyTree, TreeProps}
 
 /**
