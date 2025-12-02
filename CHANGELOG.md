@@ -5,6 +5,11 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## <small>3.2.1 (2025-12-02)</small>
+
+- Merge branch 'main' of github.com:s1nny0ur/sanity-hierarchical-document-list ([5d07c20](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/5d07c20))
+- fix: inTree Boolean Sync feature has been implemented. ([c2981ac](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/c2981ac)), closes [#2](https://github.com/s1nny0ur/sanity-hierarchical-document-list/issues/2)
+
 ## 3.2.0 (2025-12-02)
 
 - feat: add slug/path computation to onTreeChange ([4b908b2](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/4b908b2)), closes [#1](https://github.com/s1nny0ur/sanity-hierarchical-document-list/issues/1)
