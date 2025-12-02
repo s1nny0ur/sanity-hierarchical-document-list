@@ -9,6 +9,7 @@ import useLocalTree from '../hooks/useLocalTree'
 import {TreeOperationsContext} from '../hooks/useTreeOperations'
 import useTreeOperationsProvider from '../hooks/useTreeOperationsProvider'
 import {
+  AllItems,
   LocalTreeItem,
   Optional,
   StoredTreeItem,
@@ -23,16 +24,30 @@ import DocumentInNode from './DocumentInNode'
 import {SortableTree} from './SortableTree'
 import {TreeEditorErrorBoundary} from './TreeEditorErrorBoundary'
 
+type AllItemsStatus = 'loading' | 'success' | 'error'
+
 /**
- * The loaded tree users interact with
+ * The loaded tree users interact with.
+ *
+ * When used from TreeDeskStructure, allItems and allItemsStatus are passed as props
+ * (to support the onTreeChange callback with slug computation).
+ *
+ * When used from TreeInputComponent (form field), these props are optional and
+ * the hook is called internally.
  */
 const TreeEditor: React.FC<{
   tree: StoredTreeItem[]
   onChange: (patch: PatchEvent, meta?: TreeOperationMeta) => void
   options: Optional<TreeDeskStructureProps, 'documentId'>
   patchPrefix?: string
+  allItems?: AllItems
+  allItemsStatus?: AllItemsStatus
 }> = (props) => {
-  const {status: allItemsStatus, allItems} = useAllItems(props.options)
+  // Use provided allItems or fetch via hook (for form field usage)
+  const hookResult = useAllItems(props.options)
+  const allItems = props.allItems ?? hookResult.allItems
+  const allItemsStatus = props.allItemsStatus ?? hookResult.status
+
   const unAddedItems = getUnaddedItems({tree: props.tree, allItems})
 
   const {localTree, handleVisibilityToggle} = useLocalTree({

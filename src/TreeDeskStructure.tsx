@@ -4,6 +4,7 @@ import {PatchEvent, useDocumentOperation, useEditState} from 'sanity'
 
 import DeskWarning from './components/DeskWarning'
 import TreeEditor from './components/TreeEditor'
+import useAllItems from './hooks/useAllItems'
 import {
   DocumentOperations,
   StoredTreeItem,
@@ -26,6 +27,9 @@ const TreeDeskStructure: React.FC<ComponentProps> = (props) => {
   const treeFieldKey = props.options.fieldKeyInDocument || DEFAULT_FIELD_KEY
   const {published, draft, liveEdit} = useEditState(props.options.documentId, treeDocType)
   const {patch} = useDocumentOperation(props.options.documentId, treeDocType) as DocumentOperations
+
+  // Fetch all items (documents) for the tree - moved here to access in callback
+  const {status: allItemsStatus, allItems} = useAllItems(props.options)
 
   const treeValue = (published?.[treeFieldKey] || []) as StoredTreeItem[]
 
@@ -50,7 +54,7 @@ const TreeDeskStructure: React.FC<ComponentProps> = (props) => {
 
   // Fire callback when tree value changes (after patch applied)
   React.useEffect(() => {
-    const {onTreeChange, enableTreeChangeCallback = true} = props.options
+    const {onTreeChange, enableTreeChangeCallback = true, slugField, pathSeparator} = props.options
 
     // Skip if disabled, no callback, or no pending operation
     if (!enableTreeChangeCallback || !onTreeChange || !pendingOperationRef.current) {
@@ -60,13 +64,17 @@ const TreeDeskStructure: React.FC<ComponentProps> = (props) => {
     const {operation, nodeKeys} = pendingOperationRef.current
     pendingOperationRef.current = null
 
-    // Compute callback payload
+    // Compute callback payload with slug information if configured
     const event: TreeChangeEvent = {
       treeDocId: props.options.documentId,
       tree: treeValue,
       operation,
       affectedDocIds: getAffectedDocIds(treeValue, nodeKeys),
-      paths: computeAllPaths(treeValue),
+      paths: computeAllPaths(treeValue, {
+        allItems,
+        slugField,
+        pathSeparator,
+      }),
     }
 
     // Invoke async, catch errors to prevent breaking UI
@@ -75,9 +83,12 @@ const TreeDeskStructure: React.FC<ComponentProps> = (props) => {
     })
   }, [
     treeValue,
+    allItems,
     props.options.documentId,
     props.options.onTreeChange,
     props.options.enableTreeChangeCallback,
+    props.options.slugField,
+    props.options.pathSeparator,
   ])
 
   React.useEffect(() => {
@@ -121,6 +132,8 @@ const TreeDeskStructure: React.FC<ComponentProps> = (props) => {
         tree={treeValue}
         onChange={handleChange}
         patchPrefix={treeFieldKey}
+        allItems={allItems}
+        allItemsStatus={allItemsStatus}
       />
     </Box>
   )

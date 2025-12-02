@@ -1,8 +1,31 @@
 import * as React from 'react'
 import {SanityDocument, useClient} from 'sanity'
 
-import {AllItems, TreeInputOptions} from '../types'
+import {AllItems, SlugFieldConfig, TreeInputOptions} from '../types'
 import {isDraft, unprefixId} from '../utils/idUtils'
+
+/**
+ * Build the GROQ projection based on whether slugField is configured.
+ * When slugField is a string path, only fetch that field.
+ * When slugField is a function, fetch all fields for the function to process.
+ */
+function buildProjection(slugField?: SlugFieldConfig): string {
+  const baseFields = '_id, _type, _updatedAt'
+
+  if (!slugField) {
+    return `{ ${baseFields} }`
+  }
+
+  if (typeof slugField === 'function') {
+    // Function needs full document access to extract slug
+    return '{ ... }'
+  }
+
+  // String path - add the slug field to projection
+  // Handle nested paths like 'slug.current' -> need to fetch 'slug'
+  const rootField = slugField.split('.')[0]
+  return `{ ${baseFields}, ${rootField} }`
+}
 
 function getDeskFilter({referenceTo, referenceOptions}: TreeInputOptions): {
   filter: string
@@ -95,11 +118,9 @@ export default function useAllItems(options: TreeInputOptions): {
 
   React.useEffect(() => {
     const {filter, params} = getDeskFilter(options)
-    const query = `*[${filter}] {
-      _id,
-      _type,
-      _updatedAt,
-    }`
+    const projection = buildProjection(options.slugField)
+    const query = `*[${filter}] ${projection}`
+
     client
       .fetch<SanityDocument[]>(query, params)
       .then(handleFirstLoad)

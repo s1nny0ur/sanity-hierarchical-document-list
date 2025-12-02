@@ -8,10 +8,15 @@ import {default as flatDataToTree} from './utils/flatDataToTree'
 // Export new types for consumers
 export type {
   DocumentPathInfo,
+  SlugExtractor,
+  SlugFieldConfig,
   TreeChangeCallback,
   TreeChangeEvent,
   TreeOperationMeta,
 } from './types'
+
+// Export utility types and functions
+export type {ComputePathsOptions} from './utils/computePaths'
 
 export {createDeskHierarchy, createHierarchicalSchemas, flatDataToTree, hierarchyTree, TreeProps}
 

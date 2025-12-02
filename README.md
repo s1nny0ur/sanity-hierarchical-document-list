@@ -385,6 +385,96 @@ Each `DocumentPathInfo` object contains:
 | `parentNodeKey` | `string \| null` | Parent's `_key` in the tree (`null` if root level) |
 | `depth` | `number` | Zero-based depth in hierarchy |
 | `siblingIndex` | `number` | Position among siblings (zero-based) |
+| `slug` | `string \| undefined` | Document's slug (when `slugField` is configured) |
+| `ancestorSlugs` | `string[] \| undefined` | Ordered array of ancestor slugs (when `slugField` is configured) |
+| `computedPath` | `string \| undefined` | Full URL path, e.g., `/parent/child/page` (when `slugField` is configured) |
+| `computedSegments` | `string[] \| undefined` | Array of path segments (when `slugField` is configured) |
+
+### Slug/Path Computation
+
+The plugin can automatically compute URL paths from document slugs. This eliminates the need for additional queries or duplicating path logic in your callbacks.
+
+#### Configuration
+
+Add `slugField` to your hierarchy configuration:
+
+```ts
+createDeskHierarchy({
+  S,
+  context,
+  title: 'Main Navigation',
+  documentId: 'main-nav',
+  referenceTo: ['page', 'article'],
+
+  // Simple string path for slug field
+  slugField: 'slug.current',
+
+  // Optional: customize path separator (default: '/')
+  pathSeparator: '/',
+
+  onTreeChange: async (event) => {
+    for (const pathInfo of event.paths) {
+      console.log(pathInfo.slug)            // 'about-us'
+      console.log(pathInfo.ancestorSlugs)   // ['services']
+      console.log(pathInfo.computedPath)    // '/services/about-us'
+      console.log(pathInfo.computedSegments) // ['services', 'about-us']
+    }
+  }
+})
+```
+
+#### Using a Function for Complex Slug Resolution
+
+For documents with varying slug field locations or custom logic:
+
+```ts
+createDeskHierarchy({
+  // ...
+  slugField: (doc) => {
+    // Try slugOverride first, fall back to slug.current
+    if (doc.slugOverride) {
+      return doc.slugOverride
+    }
+    return doc.slug?.current
+  },
+
+  onTreeChange: async (event) => {
+    // Paths now include computed slugs from your custom logic
+  }
+})
+```
+
+#### Type-Specific Slug Resolution
+
+```ts
+createDeskHierarchy({
+  // ...
+  slugField: (doc) => {
+    switch (doc._type) {
+      case 'page':
+        return doc.slug?.current
+      case 'article':
+        return doc.urlPath || doc.slug?.current
+      case 'category':
+        return doc.handle
+      default:
+        return doc.slug?.current
+    }
+  }
+})
+```
+
+#### Slug Field Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `slugField` | `string \| ((doc: SanityDocument) => string \| undefined)` | Field path or function to extract slugs |
+| `pathSeparator` | `string` | Separator for joining path segments (default: `/`) |
+
+When `slugField` is configured, the plugin will:
+- Fetch the necessary slug data from documents (no additional queries needed)
+- Compute `slug`, `ancestorSlugs`, `computedPath`, and `computedSegments` for each document
+- Include this data in every `DocumentPathInfo` object passed to your callback
 
 ### Syncing Paths to Documents
 
@@ -406,6 +496,9 @@ export const structure = (S, context) => {
         documentId: 'main-nav',
         referenceTo: ['page', 'article'],
 
+        // Enable slug computation
+        slugField: 'slug.current',
+
         onTreeChange: async (event) => {
           const transaction = client.transaction()
 
@@ -418,7 +511,10 @@ export const structure = (S, context) => {
                     ancestors: pathInfo.ancestors,
                     depth: pathInfo.depth,
                     siblingIndex: pathInfo.siblingIndex,
-                    treeId: event.treeDocId
+                    treeId: event.treeDocId,
+                    // Slug data is now included!
+                    path: pathInfo.computedPath,
+                    breadcrumbs: pathInfo.ancestorSlugs
                   }
                 }
               })
@@ -483,9 +579,22 @@ import type {
   TreeChangeEvent,
   TreeChangeCallback,
   DocumentPathInfo,
-  TreeOperationMeta
+  TreeOperationMeta,
+  SlugExtractor,
+  SlugFieldConfig,
+  ComputePathsOptions
 } from '@considered-vision/sanity-hierarchical-document-list'
 ```
+
+| Type | Description |
+|------|-------------|
+| `TreeChangeEvent` | Event payload passed to the `onTreeChange` callback |
+| `TreeChangeCallback` | Function type for the callback |
+| `DocumentPathInfo` | Information about a document's position in the tree |
+| `TreeOperationMeta` | Metadata about tree operations |
+| `SlugExtractor` | Function type `(doc: SanityDocument) => string \| undefined` |
+| `SlugFieldConfig` | Union type: `string \| SlugExtractor` |
+| `ComputePathsOptions` | Options for the `computeAllPaths` utility |
 
 ### Important Notes
 

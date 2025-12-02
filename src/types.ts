@@ -3,6 +3,22 @@ import {ArraySchemaType, ObjectSchemaType, SanityDocument} from 'sanity'
 
 import {INTERNAL_NODE_TYPE, INTERNAL_NODE_VALUE_TYPE} from './utils/injectNodeTypeInPatches'
 
+// ============================================================================
+// Slug Extraction Types
+// ============================================================================
+
+/**
+ * Function type for extracting slugs from documents.
+ * Use this for complex slug resolution logic (e.g., different fields per document type).
+ */
+export type SlugExtractor = (doc: SanityDocument) => string | undefined
+
+/**
+ * Configuration for slug field extraction.
+ * Can be a string path (e.g., 'slug.current') or a function for custom logic.
+ */
+export type SlugFieldConfig = string | SlugExtractor
+
 interface SanityReference {
   _type: 'reference'
   _ref: string
@@ -95,6 +111,33 @@ export interface TreeInputOptions {
    * Defautlt: 'hierarchy.tree' - this schema is bundled with the plugin
    */
   documentType?: string
+
+  /**
+   * Field path or function to extract slugs from documents.
+   *
+   * When configured, the plugin will:
+   * - Fetch the specified field(s) from documents
+   * - Include slug information in the onTreeChange callback
+   * - Compute full URL paths based on the hierarchy
+   *
+   * @example
+   * // String path for simple slug fields
+   * slugField: 'slug.current'
+   *
+   * @example
+   * // Function for complex slug resolution
+   * slugField: (doc) => doc.slugOverride || doc.slug?.current
+   */
+  slugField?: SlugFieldConfig
+
+  /**
+   * Separator used when joining slugs to form paths.
+   * Default: '/'
+   *
+   * @example
+   * pathSeparator: '/' // Results in '/parent/child/page'
+   */
+  pathSeparator?: string
 }
 
 export interface TreeFieldSchema
@@ -204,6 +247,35 @@ export interface DocumentPathInfo {
 
   /** Position among siblings (zero-based) */
   siblingIndex: number
+
+  /**
+   * This document's slug value.
+   * Only populated when `slugField` is configured.
+   */
+  slug?: string
+
+  /**
+   * Ordered array of ancestor slugs (root to parent).
+   * Only populated when `slugField` is configured.
+   */
+  ancestorSlugs?: string[]
+
+  /**
+   * Full computed path including all ancestor slugs and this document's slug.
+   * Joined with the configured `pathSeparator` (default: '/').
+   * Only populated when `slugField` is configured.
+   *
+   * @example '/parent-slug/child-slug/this-slug'
+   */
+  computedPath?: string
+
+  /**
+   * Array of path segments (ancestor slugs + this slug).
+   * Only populated when `slugField` is configured.
+   *
+   * @example ['parent-slug', 'child-slug', 'this-slug']
+   */
+  computedSegments?: string[]
 }
 
 /**
