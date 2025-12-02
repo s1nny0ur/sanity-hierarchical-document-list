@@ -5,6 +5,10 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 3.2.0 (2025-12-02)
+
+- feat: add slug/path computation to onTreeChange ([4b908b2](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/4b908b2)), closes [#1](https://github.com/s1nny0ur/sanity-hierarchical-document-list/issues/1)
+
 ## 3.1.0 (2025-12-02)
 
 - fix: add missing computePaths utility file ([7a2df12](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/7a2df12))
