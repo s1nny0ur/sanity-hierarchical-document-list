@@ -126,6 +126,47 @@ git push origin main
 # → Releases 3.1.0 (highest bump wins - feat > fix)
 ```
 
+## Linking Commits to GitHub Issues
+
+Use `Fixes #N` or `Closes #N` in the commit body to automatically close issues when merged. The version bump is determined by the commit **type** (`fix:` vs `feat:`), not by whether it references an issue.
+
+### Issue Fix - Bug (Patch Release)
+```bash
+git commit -m "fix: resolve tree not updating after document delete
+
+Fixes #42"
+git push origin main
+# → Releases 3.0.1 (patch bump), closes issue #42
+```
+
+### Issue Fix - New Feature (Minor Release)
+```bash
+git commit -m "feat: add inTree boolean sync to documents
+
+Adds inTreeField and autoSyncInTree configuration options that allow
+the plugin to automatically sync tree membership status to documents.
+
+- Track which documents belong to the tree
+- Auto-patch documents when added/removed from tree
+- Support conditional readOnly fields based on tree membership
+
+Fixes #2"
+git push origin main
+# → Releases 3.2.0 (minor bump), closes issue #2
+```
+
+### Choosing the Right Commit Type
+
+| Issue Type | Commit Type | Version Bump |
+|------------|-------------|--------------|
+| Bug report | `fix:` | Patch (0.0.x) |
+| Feature request | `feat:` | Minor (0.x.0) |
+| Enhancement to existing feature | `feat:` | Minor (0.x.0) |
+| Performance improvement | `fix:` or `perf:` | Patch (0.0.x) |
+| Documentation request | `docs:` | No release |
+
+**Tip**: Not every issue fix is a feature. A bug fix that closes an issue should still use `fix:`, not `feat:`.
+
 ## Troubleshooting
 
 ### "No release published"

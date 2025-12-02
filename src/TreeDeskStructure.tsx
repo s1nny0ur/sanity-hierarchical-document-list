@@ -1,6 +1,6 @@
 import {Box, Flex, Spinner} from '@sanity/ui'
 import * as React from 'react'
-import {PatchEvent, useDocumentOperation, useEditState} from 'sanity'
+import {PatchEvent, useClient, useDocumentOperation, useEditState} from 'sanity'
 
 import DeskWarning from './components/DeskWarning'
 import TreeEditor from './components/TreeEditor'
@@ -33,8 +33,14 @@ const TreeDeskStructure: React.FC<ComponentProps> = (props) => {
 
   const treeValue = (published?.[treeFieldKey] || []) as StoredTreeItem[]
 
+  // Client for auto-sync patching
+  const client = useClient({apiVersion: '2024-01-01'})
+
   // Track pending operation for callback
   const pendingOperationRef = React.useRef<TreeOperationMeta | null>(null)
+
+  // Track previous tree document IDs for computing removals
+  const previousDocIdsRef = React.useRef<Set<string>>(new Set())
 
   const handleChange = React.useCallback(
     (patchEvent: PatchEvent, operationMeta?: TreeOperationMeta) => {
@@ -54,9 +60,56 @@ const TreeDeskStructure: React.FC<ComponentProps> = (props) => {
 
   // Fire callback when tree value changes (after patch applied)
   React.useEffect(() => {
-    const {onTreeChange, enableTreeChangeCallback = true, slugField, pathSeparator} = props.options
+    const {
+      onTreeChange,
+      enableTreeChangeCallback = true,
+      slugField,
+      pathSeparator,
+      inTreeField,
+      autoSyncInTree,
+    } = props.options
 
-    // Skip if disabled, no callback, or no pending operation
+    // Extract current document IDs from tree
+    const currentDocIds = new Set<string>()
+    for (const item of treeValue) {
+      const docId = item.value?.reference?._ref
+      if (docId) {
+        currentDocIds.add(docId)
+      }
+    }
+
+    // Compute removed IDs (were in previous, not in current)
+    const removedDocIds: string[] = []
+    for (const docId of previousDocIdsRef.current) {
+      if (!currentDocIds.has(docId)) {
+        removedDocIds.push(docId)
+      }
+    }
+
+    // Update previous ref for next comparison
+    previousDocIdsRef.current = currentDocIds
+
+    // Handle auto-sync if enabled (runs even without callback)
+    if (autoSyncInTree && inTreeField && pendingOperationRef.current) {
+      const transaction = client.transaction()
+
+      // Set inTree: true for all current tree documents
+      for (const docId of currentDocIds) {
+        transaction.patch(docId, {set: {[inTreeField]: true}})
+      }
+
+      // Set inTree: false for removed documents
+      for (const docId of removedDocIds) {
+        transaction.patch(docId, {set: {[inTreeField]: false}})
+      }
+
+      // Commit transaction (fire and forget with error logging)
+      transaction.commit().catch((err) => {
+        console.error('[hierarchical-document-list] Auto-sync inTree error:', err)
+      })
+    }
+
+    // Skip callback if disabled, no callback provided, or no pending operation
     if (!enableTreeChangeCallback || !onTreeChange || !pendingOperationRef.current) {
       return
     }
@@ -75,6 +128,7 @@ const TreeDeskStructure: React.FC<ComponentProps> = (props) => {
         slugField,
         pathSeparator,
       }),
+      removedDocIds,
     }
 
     // Invoke async, catch errors to prevent breaking UI
@@ -84,11 +138,14 @@ const TreeDeskStructure: React.FC<ComponentProps> = (props) => {
   }, [
     treeValue,
     allItems,
+    client,
     props.options.documentId,
     props.options.onTreeChange,
     props.options.enableTreeChangeCallback,
     props.options.slugField,
     props.options.pathSeparator,
+    props.options.inTreeField,
+    props.options.autoSyncInTree,
   ])
 
   React.useEffect(() => {

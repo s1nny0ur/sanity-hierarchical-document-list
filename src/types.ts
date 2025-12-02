@@ -138,6 +138,15 @@ export interface TreeInputOptions {
    * pathSeparator: '/' // Results in '/parent/child/page'
    */
   pathSeparator?: string
+
+  /**
+   * Field name on documents to track tree membership.
+   * When configured, the plugin tracks which documents are in the tree
+   * and can sync this status to individual documents.
+   *
+   * @example 'inTree' // Documents will have { inTree: true } when in tree
+   */
+  inTreeField?: string
 }
 
 export interface TreeFieldSchema
@@ -181,6 +190,16 @@ export interface TreeDeskStructureProps extends TreeInputOptions {
    * Default: `true` (callback fires if provided)
    */
   enableTreeChangeCallback?: boolean
+
+  /**
+   * When true, the plugin automatically patches documents' inTreeField
+   * when they are added to or removed from the tree.
+   *
+   * Requires `inTreeField` to be set.
+   *
+   * Default: `false` (manual mode - use onTreeChange callback)
+   */
+  autoSyncInTree?: boolean
 }
 
 export interface DocumentPair {
@@ -296,6 +315,12 @@ export interface TreeChangeEvent {
 
   /** Computed paths for ALL documents in tree */
   paths: DocumentPathInfo[]
+
+  /**
+   * Document IDs that were removed from the tree in this operation.
+   * Useful for cleaning up `inTree` status on removed documents.
+   */
+  removedDocIds: string[]
 }
 
 /**

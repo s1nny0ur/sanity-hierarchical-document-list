@@ -605,6 +605,131 @@ import type {
 
 ---
 
+## In-Tree Status Sync
+
+The plugin can track which documents belong to the tree by syncing a boolean field on each document. This enables powerful schema patterns like conditional `readOnly` fields.
+
+### Use Cases
+
+- **Lock slugs for tree-managed documents**: Prevent direct slug edits that would break computed paths
+- **Show visual indicators**: Display badges or messages for tree-managed documents
+- **Filter queries**: Query only documents that are (or aren't) in a hierarchy
+
+### Configuration Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `inTreeField` | `string` | Field name on documents to sync (e.g., `'inTree'`) |
+| `autoSyncInTree` | `boolean` | When `true`, plugin auto-patches documents |
+
+### Auto-Sync Mode (Simple)
+
+The plugin handles everything automatically:
+
+```ts
+createDeskHierarchy({
+  S,
+  context,
+  title: 'Main Navigation',
+  documentId: 'main-nav',
+  referenceTo: ['page'],
+
+  // Enable auto-sync
+  inTreeField: 'inTree',
+  autoSyncInTree: true,
+})
+```
+
+When documents are added to the tree, `inTree` is set to `true`.
+When removed, `inTree` is set to `false`.
+
+### Manual Sync Mode (More Control)
+
+Handle syncing yourself using the callback:
+
+```ts
+createDeskHierarchy({
+  S,
+  context,
+  title: 'Main Navigation',
+  documentId: 'main-nav',
+  referenceTo: ['page'],
+
+  inTreeField: 'inTree',
+  autoSyncInTree: false, // default
+
+  onTreeChange: async (event) => {
+    const client = context.getClient({apiVersion: '2024-01-01'})
+    const transaction = client.transaction()
+
+    // Set inTree: true for documents in tree
+    for (const pathInfo of event.paths) {
+      transaction.patch(pathInfo.docId, {
+        set: { inTree: true }
+      })
+    }
+
+    // Set inTree: false for removed documents
+    for (const docId of event.removedDocIds) {
+      transaction.patch(docId, {
+        set: { inTree: false }
+      })
+    }
+
+    await transaction.commit()
+  }
+})
+```
+
+### Schema Pattern: Conditional Read-Only Slugs
+
+Use `inTree` to lock slug fields for documents managed by the hierarchy:
+
+```ts
+// page.ts schema
+import {defineType, defineField} from 'sanity'
+
+export default defineType({
+  name: 'page',
+  title: 'Page',
+  type: 'document',
+  fields: [
+    defineField({
+      name: 'title',
+      type: 'string',
+    }),
+    defineField({
+      name: 'slug',
+      type: 'slug',
+      options: { source: 'title' },
+      readOnly: ({document}) => document?.inTree === true,
+      description: ({document}) =>
+        document?.inTree
+          ? 'Slug is managed by the navigation hierarchy. Remove from tree to edit.'
+          : undefined,
+    }),
+    defineField({
+      name: 'inTree',
+      type: 'boolean',
+      hidden: true, // Managed by plugin
+      initialValue: false,
+    }),
+  ],
+})
+```
+
+### TreeChangeEvent: removedDocIds
+
+The callback event now includes `removedDocIds`:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `removedDocIds` | `string[]` | Documents removed from tree in this operation |
+
+This array is populated when documents are removed from the tree, allowing you to update their `inTree` status accordingly.
+
+---
+
 ## License
 
 MIT-licensed. See LICENSE.
