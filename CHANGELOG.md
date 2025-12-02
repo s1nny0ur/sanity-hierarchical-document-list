@@ -5,6 +5,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 3.1.0 (2025-12-02)
+
+- fix: add missing computePaths utility file ([7a2df12](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/7a2df12))
+- Merge branch 'main' of github.com:s1nny0ur/sanity-hierarchical-document-list ([a40a64b](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/a40a64b))
+- feat: add page change callback functionality for studio consumption ([515f424](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/515f424))
+
 ## <small>3.0.1 (2025-12-01)</small>
 
 - fix: lint errors preventing build ([f98c258](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/f98c258))
