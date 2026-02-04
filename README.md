@@ -14,9 +14,7 @@ Plugin for visually organizing documents as hierarchies in the [Sanity studio](h
 
 If you're looking for a way to order documents on a flat list, refer to [@sanity/orderable-document-list](https://github.com/sanity-io/orderable-document-list).
 
-
 ## Installation
-
 
 ```bash
 # From the root of your sanity project
@@ -30,18 +28,20 @@ npm i @considered-vision/sanity-hierarchical-document-list
 ```js
 // sanity.config.js
 import {defineConfig} from 'sanity'
-import {hierarchicalDocumentList, hierarchyTree} from '@considered-vision/sanity-hierarchical-document-list'
- 
+import {
+  hierarchicalDocumentList,
+  hierarchyTree
+} from '@considered-vision/sanity-hierarchical-document-list'
+
 export default defineConfig({
-   // ...
-   plugins: [hierarchicalDocumentList()],
-   schema: {
+  // ...
+  plugins: [hierarchicalDocumentList()],
+  schema: {
     types: [
       //...,
       hierarchyTree
     ]
-   }
-
+  }
 })
 ```
 
@@ -53,14 +53,19 @@ export default defineConfig({
 // sanity.config.ts
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
-import {createDeskHierarchy, hierarchicalDocumentList, hierarchyTree} from '@considered-vision/sanity-hierarchical-document-list'
+import {
+  createDeskHierarchy,
+  hierarchicalDocumentList,
+  hierarchyTree
+} from '@considered-vision/sanity-hierarchical-document-list'
 
 export default defineConfig({
   // ...
   plugins: [
     structureTool({
       // NOTE: You MUST pass S and Context along to createDeskHierarchy as props
-      structure: (S, context) =>  S.list()
+      structure: (S, context) =>
+        S.list()
           .title('Content')
           .items([
             ...S.documentTypeListItems(), // or whatever other structure you have
@@ -368,29 +373,29 @@ createDeskHierarchy({
 
 The `TreeChangeEvent` object passed to your callback includes:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `treeDocId` | `string` | The tree document ID |
-| `tree` | `StoredTreeItem[]` | Full tree state after the mutation |
-| `operation` | `'add' \| 'remove' \| 'move' \| 'duplicate' \| 'reorder'` | Type of operation that triggered the change |
-| `affectedDocIds` | `string[]` | Document IDs affected by this change (includes descendants) |
-| `paths` | `DocumentPathInfo[]` | Computed paths for ALL documents in tree |
+| Property         | Type                                                      | Description                                                 |
+| ---------------- | --------------------------------------------------------- | ----------------------------------------------------------- |
+| `treeDocId`      | `string`                                                  | The tree document ID                                        |
+| `tree`           | `StoredTreeItem[]`                                        | Full tree state after the mutation                          |
+| `operation`      | `'add' \| 'remove' \| 'move' \| 'duplicate' \| 'reorder'` | Type of operation that triggered the change                 |
+| `affectedDocIds` | `string[]`                                                | Document IDs affected by this change (includes descendants) |
+| `paths`          | `DocumentPathInfo[]`                                      | Computed paths for ALL documents in tree                    |
 
 Each `DocumentPathInfo` object contains:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `docId` | `string` | Published document `_id` |
-| `docType` | `string` | Document `_type` |
-| `ancestors` | `string[]` | Ordered array of ancestor document `_id`s (root to parent) |
-| `nodeKey` | `string` | This document's `_key` in the tree |
-| `parentNodeKey` | `string \| null` | Parent's `_key` in the tree (`null` if root level) |
-| `depth` | `number` | Zero-based depth in hierarchy |
-| `siblingIndex` | `number` | Position among siblings (zero-based) |
-| `slug` | `string \| undefined` | Document's slug (when `slugField` is configured) |
-| `ancestorSlugs` | `string[] \| undefined` | Ordered array of ancestor slugs (when `slugField` is configured) |
-| `computedPath` | `string \| undefined` | Full URL path, e.g., `/parent/child/page` (when `slugField` is configured) |
-| `computedSegments` | `string[] \| undefined` | Array of path segments (when `slugField` is configured) |
+| Property           | Type                    | Description                                                                |
+| ------------------ | ----------------------- | -------------------------------------------------------------------------- |
+| `docId`            | `string`                | Published document `_id`                                                   |
+| `docType`          | `string`                | Document `_type`                                                           |
+| `ancestors`        | `string[]`              | Ordered array of ancestor document `_id`s (root to parent)                 |
+| `nodeKey`          | `string`                | This document's `_key` in the tree                                         |
+| `parentNodeKey`    | `string \| null`        | Parent's `_key` in the tree (`null` if root level)                         |
+| `depth`            | `number`                | Zero-based depth in hierarchy                                              |
+| `siblingIndex`     | `number`                | Position among siblings (zero-based)                                       |
+| `slug`             | `string \| undefined`   | Document's slug (when `slugField` is configured)                           |
+| `ancestorSlugs`    | `string[] \| undefined` | Ordered array of ancestor slugs (when `slugField` is configured)           |
+| `computedPath`     | `string \| undefined`   | Full URL path, e.g., `/parent/child/page` (when `slugField` is configured) |
+| `computedSegments` | `string[] \| undefined` | Array of path segments (when `slugField` is configured)                    |
 
 ### Slug/Path Computation
 
@@ -416,9 +421,9 @@ createDeskHierarchy({
 
   onTreeChange: async (event) => {
     for (const pathInfo of event.paths) {
-      console.log(pathInfo.slug)            // 'about-us'
-      console.log(pathInfo.ancestorSlugs)   // ['services']
-      console.log(pathInfo.computedPath)    // '/services/about-us'
+      console.log(pathInfo.slug) // 'about-us'
+      console.log(pathInfo.ancestorSlugs) // ['services']
+      console.log(pathInfo.computedPath) // '/services/about-us'
       console.log(pathInfo.computedSegments) // ['services', 'about-us']
     }
   }
@@ -468,12 +473,13 @@ createDeskHierarchy({
 
 #### Slug Field Options
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `slugField` | `string \| ((doc: SanityDocument) => string \| undefined)` | Field path or function to extract slugs |
-| `pathSeparator` | `string` | Separator for joining path segments (default: `/`) |
+| Option          | Type                                                       | Description                                        |
+| --------------- | ---------------------------------------------------------- | -------------------------------------------------- |
+| `slugField`     | `string \| ((doc: SanityDocument) => string \| undefined)` | Field path or function to extract slugs            |
+| `pathSeparator` | `string`                                                   | Separator for joining path segments (default: `/`) |
 
 When `slugField` is configured, the plugin will:
+
 - Fetch the necessary slug data from documents (no additional queries needed)
 - Compute `slug`, `ancestorSlugs`, `computedPath`, and `computedSegments` for each document
 - Include this data in every `DocumentPathInfo` object passed to your callback
@@ -538,17 +544,17 @@ Use `enableTreeChangeCallback` to conditionally enable or disable the callback:
 createDeskHierarchy({
   // ...
   onTreeChange: handleTreeChange,
-  enableTreeChangeCallback: false  // Callback will not fire
+  enableTreeChangeCallback: false // Callback will not fire
 })
 ```
 
-| `onTreeChange` | `enableTreeChangeCallback` | Result |
-|----------------|---------------------------|--------|
-| undefined | undefined | No callback |
-| undefined | true | No callback |
-| defined | undefined | Callback fires (default) |
-| defined | true | Callback fires |
-| defined | false | No callback |
+| `onTreeChange` | `enableTreeChangeCallback` | Result                   |
+| -------------- | -------------------------- | ------------------------ |
+| undefined      | undefined                  | No callback              |
+| undefined      | true                       | No callback              |
+| defined        | undefined                  | Callback fires (default) |
+| defined        | true                       | Callback fires           |
+| defined        | false                      | No callback              |
 
 **Environment-based toggle:**
 
@@ -566,9 +572,7 @@ createDeskHierarchy({
 createDeskHierarchy({
   // ...
   onTreeChange: handleTreeChange,
-  enableTreeChangeCallback: context.currentUser?.roles.some(
-    r => r.name === 'administrator'
-  )
+  enableTreeChangeCallback: context.currentUser?.roles.some((r) => r.name === 'administrator')
 })
 ```
 
@@ -588,15 +592,15 @@ import type {
 } from '@considered-vision/sanity-hierarchical-document-list'
 ```
 
-| Type | Description |
-|------|-------------|
-| `TreeChangeEvent` | Event payload passed to the `onTreeChange` callback |
-| `TreeChangeCallback` | Function type for the callback |
-| `DocumentPathInfo` | Information about a document's position in the tree |
-| `TreeOperationMeta` | Metadata about tree operations |
-| `SlugExtractor` | Function type `(doc: SanityDocument) => string \| undefined` |
-| `SlugFieldConfig` | Union type: `string \| SlugExtractor` |
-| `ComputePathsOptions` | Options for the `computeAllPaths` utility |
+| Type                  | Description                                                  |
+| --------------------- | ------------------------------------------------------------ |
+| `TreeChangeEvent`     | Event payload passed to the `onTreeChange` callback          |
+| `TreeChangeCallback`  | Function type for the callback                               |
+| `DocumentPathInfo`    | Information about a document's position in the tree          |
+| `TreeOperationMeta`   | Metadata about tree operations                               |
+| `SlugExtractor`       | Function type `(doc: SanityDocument) => string \| undefined` |
+| `SlugFieldConfig`     | Union type: `string \| SlugExtractor`                        |
+| `ComputePathsOptions` | Options for the `computeAllPaths` utility                    |
 
 ### Important Notes
 
@@ -619,10 +623,10 @@ The plugin can track which documents belong to the tree by syncing a boolean fie
 
 ### Configuration Options
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `inTreeField` | `string` | Field name on documents to sync (e.g., `'inTree'`) |
-| `autoSyncInTree` | `boolean` | When `true`, plugin auto-patches documents |
+| Option           | Type      | Description                                        |
+| ---------------- | --------- | -------------------------------------------------- |
+| `inTreeField`    | `string`  | Field name on documents to sync (e.g., `'inTree'`) |
+| `autoSyncInTree` | `boolean` | When `true`, plugin auto-patches documents         |
 
 ### Auto-Sync Mode (Simple)
 
@@ -638,7 +642,7 @@ createDeskHierarchy({
 
   // Enable auto-sync
   inTreeField: 'inTree',
-  autoSyncInTree: true,
+  autoSyncInTree: true
 })
 ```
 
@@ -667,14 +671,14 @@ createDeskHierarchy({
     // Set inTree: true for documents in tree
     for (const pathInfo of event.paths) {
       transaction.patch(pathInfo.docId, {
-        set: { inTree: true }
+        set: {inTree: true}
       })
     }
 
     // Set inTree: false for removed documents
     for (const docId of event.removedDocIds) {
       transaction.patch(docId, {
-        set: { inTree: false }
+        set: {inTree: false}
       })
     }
 
@@ -698,25 +702,25 @@ export default defineType({
   fields: [
     defineField({
       name: 'title',
-      type: 'string',
+      type: 'string'
     }),
     defineField({
       name: 'slug',
       type: 'slug',
-      options: { source: 'title' },
+      options: {source: 'title'},
       readOnly: ({document}) => document?.inTree === true,
       description: ({document}) =>
         document?.inTree
           ? 'Slug is managed by the navigation hierarchy. Remove from tree to edit.'
-          : undefined,
+          : undefined
     }),
     defineField({
       name: 'inTree',
       type: 'boolean',
       hidden: true, // Managed by plugin
-      initialValue: false,
-    }),
-  ],
+      initialValue: false
+    })
+  ]
 })
 ```
 
@@ -724,8 +728,8 @@ export default defineType({
 
 The callback event now includes `removedDocIds`:
 
-| Property | Type | Description |
-|----------|------|-------------|
+| Property        | Type       | Description                                   |
+| --------------- | ---------- | --------------------------------------------- |
 | `removedDocIds` | `string[]` | Documents removed from tree in this operation |
 
 This array is populated when documents are removed from the tree, allowing you to update their `inTree` status accordingly.

@@ -39,12 +39,16 @@ const deskTreeValidator = (props: TreeProps): React.FC => {
   return (deskProps): React.ReactElement => <TreeDeskStructure {...deskProps} options={props} />
 }
 
-export default function createDeskHierarchy(props: TreeProps): ReturnType<StructureBuilder['listItem']> {
+export default function createDeskHierarchy(
+  props: TreeProps
+): ReturnType<StructureBuilder['listItem']> {
   const {documentId, referenceTo, referenceOptions, context, S, creatableTypes} = props
   if (!S || !context) {
-    throw new Error('Invalid configuration. S or context props are undefined. ' +
-      'These props are available as function parameters when configuring structure, and must be passed along to createDeskHierarchy. ' +
-      'Confer the plugin README for example usage.')
+    throw new Error(
+      'Invalid configuration. S or context props are undefined. ' +
+        'These props are available as function parameters when configuring structure, and must be passed along to createDeskHierarchy. ' +
+        'Confer the plugin README for example usage.'
+    )
   }
 
   const {schema} = context
