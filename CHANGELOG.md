@@ -5,6 +5,11 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 3.3.0 (2026-02-04)
+
+- style: apply prettier formatting ([57a11c9](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/57a11c9))
+- feat: add Sanity v5 compatibility ([10cbecc](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/10cbecc))
+
 ## <small>3.2.1 (2025-12-02)</small>
 
 - Merge branch 'main' of github.com:s1nny0ur/sanity-hierarchical-document-list ([5d07c20](https://github.com/s1nny0ur/sanity-hierarchical-document-list/commit/5d07c20))
