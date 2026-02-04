@@ -1,7 +1,7 @@
 import {AddIcon} from '@sanity/icons'
 import * as React from 'react'
 import type {ConfigContext} from 'sanity'
-import {StructureBuilder} from 'sanity/desk'
+import {StructureBuilder} from 'sanity/structure'
 
 import TreeDeskStructure from './TreeDeskStructure'
 import {TreeDeskStructureProps} from './types'

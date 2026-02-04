@@ -2,6 +2,8 @@
 
 > **Fork of [@sanity/hierarchical-document-list](https://github.com/sanity-io/hierarchical-document-list)** with maintained dependencies and dnd-kit-based tree view.
 
+**Compatibility:** Sanity v3, v4, and v5 | React 18.3+ and 19+
+
 Plugin for visually organizing documents as hierarchies in the [Sanity studio](https://www.sanity.io/docs/sanity-studio). Applications include:
 
 - Tables of content - such as a book's sections and chapters
@@ -45,19 +47,19 @@ export default defineConfig({
 
 ### 2. Add one or more hierarchy documents to your Structure Builder.
 
-💡 _To learn about custom desk structures, refer to the [Structure Builder docs](https://www.sanity.io/docs/overview-structure-builder)._
+💡 _To learn about custom structures, refer to the [Structure Builder docs](https://www.sanity.io/docs/overview-structure-builder)._
 
 ```ts
 // sanity.config.ts
 import {defineConfig} from 'sanity'
-import {deskTool} from 'sanity/desk'
+import {structureTool} from 'sanity/structure'
 import {createDeskHierarchy, hierarchicalDocumentList, hierarchyTree} from '@considered-vision/sanity-hierarchical-document-list'
 
 export default defineConfig({
   // ...
   plugins: [
-    deskTool({
-      // NOTE: I'n V3 you MUST pass S and Context along to createDeskHierarchy as props
+    structureTool({
+      // NOTE: You MUST pass S and Context along to createDeskHierarchy as props
       structure: (S, context) =>  S.list()
           .title('Content')
           .items([
